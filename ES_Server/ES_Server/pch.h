@@ -1,7 +1,5 @@
 #pragma once
 
-#include <iostream>
-
 /*==============
 	Network
 ==============*/
@@ -24,4 +22,7 @@
 ==============*/
 #include <mysqlx/xdevapi.h>
 
+
+#include <iostream>
+#include "Macro.h"
 using namespace std;
