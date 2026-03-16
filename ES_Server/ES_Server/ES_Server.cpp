@@ -4,7 +4,7 @@
 
  int main() {
     // 1. DB 연결
-    if (GDBManager->Connect("localhost", 33060, "root", "rjsfud5605!!", "element_auto")) {
+    if (GDBManager->Connect("localhost", 3306, "root", "rjsfud5605!!", "element_auto")) {
         // 2. 마스터 데이터 캐싱 (전부 가져오기)
         GDataManager->Init();
 

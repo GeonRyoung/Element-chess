@@ -4,29 +4,39 @@
 
 void DataManager::Init()
 {
-	try
+	MYSQL* conn = GDBManager->GetConnection();
+	if (!conn)
 	{
-		mysqlx::Schema db = GDBManager->GetSchema();
-		mysqlx::Table unitTable = db.getTable("unit_information");
-
-		auto result = unitTable.select("unit_id", "name", "type", "role", "unit_stats").execute();
-
-		for (mysqlx::Row row : result.fetchAll())
-		{
-			UnitMasterData data;
-			data.unitId = static_cast<int32_t>(row[0]);
-			data.name = static_cast<string>(row[1]);
-			data.type = static_cast<string>(row[2]);
-			data.role = static_cast<string>(row[3]);
-			data.statsJson = static_cast<string>(row[4]);	
-			_unitDatas[data.unitId] = data;
-		}
-
-		cout << " [DataManger] " << _unitDatas.size() << " Units Cached." << "\n";
+		cerr << " [DataManager] DB Connection is null!" << "\n";
+		return;
 	}
-	catch (const std::exception& e)
+
+	const char* query = "SELECT unit_id, name, type, role, unit_stats FROM unit_information";
+
+	if (mysql_query(conn, query) == 0)
 	{
-		cerr << " [DataMange] Error:" << e.what() << "\n";
+		MYSQL_RES* result = mysql_store_result(conn);
+		if (result)
+		{
+			MYSQL_ROW row;
+			while ((row = mysql_fetch_row(result)))
+			{
+				UnitMasterData data;
+				data.unitId = std::stoi(row[0]);
+				data.name = row[1] ? row[1] : "";
+				data.type = row[2] ? row[2] : "";
+				data.role = row[3] ? row[3] : "";
+				data.statsJson = row[4] ? row[4] : "";
+
+				_unitDatas[data.unitId] = data;
+			}
+			mysql_free_result(result);
+			cout << " [DataManger] " << _unitDatas.size() << " Units Cached." << "\n";
+		}
+	}
+	else
+	{
+		cerr << " [DataMange] Query Error: " << mysql_error(conn) << "\n";
 	}
 }
 
