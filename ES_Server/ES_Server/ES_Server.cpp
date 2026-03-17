@@ -112,12 +112,24 @@ int main() {
 			cout << "  - PW : " << loginReq->password << endl;
 
 			int32_t accountId = GDBManager->VerifyAccount(loginReq->username, loginReq->password);
+			
+			PKT_S2C_LoginRes resPacket;
+			resPacket.header.size = sizeof(PKT_S2C_LoginRes);
+			resPacket.header.id = (uint16_t)EPacketId::LoginRes;
+			
 			if (accountId != -1) {
 				cout << " -> DB 확인 완료: 로그인 성공! (AccountID: " << accountId << ")" << endl;
+				resPacket.bSuccess = true;
+				resPacket.accountId = accountId;
 			}
 			else {
 				cout << " -> DB 확인 완료: 로그인 실패! (정보 불일치)" << endl;
+				resPacket.bSuccess = false;
+				resPacket.accountId = -1;
 			}
+
+			send(clientSocket, (char*)&resPacket, resPacket.header.size, 0);
+			cout << " [송신] 로그인 응답 패킷 전송 완료\n";
 
 			break;
 		}

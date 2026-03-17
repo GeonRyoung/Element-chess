@@ -23,4 +23,11 @@ struct FPKT_C2S_LoginReq
 	char Password[32];
 };
 
+struct FPKT_S2C_LoginRes
+{
+	FPacketHeader Header;
+	bool bSuccess;
+	int32 AccountId;
+};
+
 #pragma pack(pop)

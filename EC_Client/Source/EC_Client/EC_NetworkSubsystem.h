@@ -9,21 +9,24 @@
 #include "SocketSubsystem.h"
 #include "Interfaces/IPv4/IPv4Address.h"
 
-
+#include "ECPacket.h"
 
 #include "EC_NetworkSubsystem.generated.h"
 
-/**
- * 
- */
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnLoginResponse, bool, bIsSuccess);
+
 UCLASS()
-class EC_CLIENT_API UEC_NetworkSubsystem : public UGameInstanceSubsystem
+class EC_CLIENT_API UEC_NetworkSubsystem : public UGameInstanceSubsystem, public FTickableGameObject
 {
 	GENERATED_BODY()
 	
 public:
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 	virtual void Deinitialize() override;
+
+	virtual void Tick(float DeltaTime) override;
+	virtual TStatId GetStatId() const override { return TStatId(); }
+	virtual bool IsTickable() const override { return true; }
 
 	UFUNCTION(BlueprintCallable, category = "Network")
 	bool ConnectToServer(const FString& IPAddress, int32 Port);
@@ -34,8 +37,18 @@ public:
 	UFUNCTION(BlueprintCallable, category = "Network")
 	bool SendMessage(const FString& Message);
 
+	/*======================
+			로그인
+	======================*/
+
 	UFUNCTION(BlueprintCallable, category = "Network")
 	bool SendLoginRequest(const FString& ID, const FString& Password);
+
+	UFUNCTION(BlueprintCallable, Category = "Network")
+	void ReceivePacket();
+
+	UPROPERTY(BlueprintAssignable, Category = "Network|Event")
+	FOnLoginResponse OnLoginResponseEvent;
 
 private:
 	FSocket* ClientSocket = nullptr;

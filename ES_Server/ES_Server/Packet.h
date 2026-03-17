@@ -21,3 +21,12 @@ struct PKT_C2S_LoginReq
 	char username[32];
 	char password[32]; 
 };
+
+struct PKT_S2C_LoginRes
+{
+	PacketHeader header;
+	bool bSuccess;
+	int32_t accountId;
+};
+
+#pragma pack(pop)

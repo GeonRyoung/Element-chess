@@ -13,6 +13,11 @@ void UEC_NetworkSubsystem::Deinitialize()
 	Super::Deinitialize();
 }
 
+void UEC_NetworkSubsystem::Tick(float DeltaTime) 
+{
+	ReceivePacket();
+}
+
 bool UEC_NetworkSubsystem::ConnectToServer(const FString& IPAddress, int32 Port)
 {
 	ISocketSubsystem* SocketSubsystem = ISocketSubsystem::Get(PLATFORM_SOCKETSUBSYSTEM);
@@ -64,7 +69,7 @@ bool UEC_NetworkSubsystem::SendMessage(const FString& Message)
 	int32 BytesSent = 0;
 
 	bool bSuccessful = ClientSocket->Send((uint8*)Convert.Get(), Convert.Length(), BytesSent);
-	
+
 	if (bSuccessful)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("[Network] Sent message: %s"), *Message);
@@ -72,6 +77,10 @@ bool UEC_NetworkSubsystem::SendMessage(const FString& Message)
 
 	return bSuccessful;
 }
+
+/*======================
+		로그인
+======================*/
 
 bool UEC_NetworkSubsystem::SendLoginRequest(const FString& ID, const FString& Password)
 {
@@ -96,11 +105,48 @@ bool UEC_NetworkSubsystem::SendLoginRequest(const FString& ID, const FString& Pa
 
 	int32 BytesSent = 0;
 	bool bSuccessful = ClientSocket->Send((uint8*)&Packet, Packet.Header.Size, BytesSent);
- 
+
 	if (bSuccessful)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("[Network] 로그인 요청 패킷 전송 완료! ID: %s"), *ID);
 	}
 
 	return bSuccessful;
+}
+
+void UEC_NetworkSubsystem::ReceivePacket()
+{
+	if (!ClientSocket || ClientSocket->GetConnectionState() != SCS_Connected) return;
+
+	uint32 PendingDataSize = 0;
+
+	if (ClientSocket->HasPendingData(PendingDataSize) && PendingDataSize > 0)
+	{
+		TArray<uint8> ReceiveBuffer;
+		ReceiveBuffer.SetNumUninitialized(PendingDataSize);
+
+		int32 BytesRead = 0;
+		if (ClientSocket->Recv(ReceiveBuffer.GetData(), ReceiveBuffer.Num(), BytesRead))
+		{
+			FPacketHeader* Header = (FPacketHeader*)ReceiveBuffer.GetData();
+
+			switch (Header->ID)
+			{
+			case (uint16)EPacketID::LoginRes:
+			{
+				FPKT_S2C_LoginRes* ResPacket = (FPKT_S2C_LoginRes*)ReceiveBuffer.GetData();
+				OnLoginResponseEvent.Broadcast(ResPacket->bSuccess);
+
+				UE_LOG(LogTemp, Warning, TEXT("[Network] 로그인 응답 도착! 성공 여부: %s"),
+					ResPacket->bSuccess ? TEXT("True") : TEXT("False"));
+				break;
+			}
+			default:
+			{
+				UE_LOG(LogTemp, Warning, TEXT("[Network] 알 수 없는 패킷 수신 (ID: %d)"), Header->ID);
+				break;
+			}
+			}
+		}
+	}
 }
