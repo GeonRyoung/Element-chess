@@ -142,6 +142,7 @@
     <ClCompile Include="DataManager.cpp" />
     <ClCompile Include="DBManager.cpp" />
     <ClCompile Include="ES_Server.cpp" />
+    <ClCompile Include="NetworkManager.cpp" />
     <ClCompile Include="pch.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="Session.cpp" />
@@ -150,6 +151,7 @@
     <ClInclude Include="DataManager.h" />
     <ClInclude Include="DBManager.h" />
     <ClInclude Include="Macro.h" />
+    <ClInclude Include="NetworkManager.h" />
     <ClInclude Include="Packet.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Player.h" />
