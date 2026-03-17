@@ -6,6 +6,8 @@
 #include <Winsock2.h>
 #include <windows.h>
 #include "Packet.h"
+#include <thread>
+#include <atomic>
 
 /*==============
 	Structures

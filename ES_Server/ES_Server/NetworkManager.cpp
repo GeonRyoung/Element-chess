@@ -59,3 +59,44 @@ bool NetworkManager::StartServer(uint16_t port)
 
 	return true;
 }
+
+void NetworkManager::WorkerThreadMain(HANDLE iocpHandle)
+{
+	while (true)
+	{
+		DWORD bytesTransferred = 0;
+		ULONG_PTR completionKey = 0;
+		WSAOVERLAPPED* overlapped = nullptr;
+
+		bool ret = GetQueuedCompletionStatus(
+			iocpHandle,
+			&bytesTransferred,
+			&completionKey,
+			&overlapped,
+			INFINITE
+		);
+
+		Session* session = (Session*)completionKey;
+
+		if (ret == false || bytesTransferred == 0)
+		{
+			if (session != nullptr)
+			{
+				session->Disconnect();
+			}
+			continue;
+		}
+		
+		OverlappedEx* overlappedEx = (OverlappedEx*)overlapped;
+
+		if (overlappedEx->type == IO_TYPE::READ)
+		{
+			cout << "[Session " << session->GetSessionId() << "] "
+				<< bytesTransferred << " 바이트의 데이터를 수신했습니다!" << endl;
+		}
+		else if (overlappedEx->type == IO_TYPE::WRITE)
+		{
+			cout << "[Session " << session->GetSessionId() << "] 데이터 송신 완료!" << endl;
+		}
+	}
+}
