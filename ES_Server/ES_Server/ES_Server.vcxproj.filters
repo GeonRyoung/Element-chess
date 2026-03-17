@@ -28,6 +28,9 @@
     <ClCompile Include="DataManager.cpp">
       <Filter>Game</Filter>
     </ClCompile>
+    <ClCompile Include="Session.cpp">
+      <Filter>Network</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -46,6 +49,9 @@
       <Filter>Game</Filter>
     </ClInclude>
     <ClInclude Include="Packet.h">
+      <Filter>Network</Filter>
+    </ClInclude>
+    <ClInclude Include="Session.h">
       <Filter>Network</Filter>
     </ClInclude>
   </ItemGroup>
