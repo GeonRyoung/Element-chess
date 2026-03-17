@@ -45,5 +45,8 @@
     <ClInclude Include="DataManager.h">
       <Filter>Game</Filter>
     </ClInclude>
+    <ClInclude Include="Packet.h">
+      <Filter>Network</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

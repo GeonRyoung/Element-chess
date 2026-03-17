@@ -5,6 +5,7 @@
 ==============*/
 #include <Winsock2.h>
 #include <windows.h>
+#include "Packet.h"
 
 /*==============
 	Structures

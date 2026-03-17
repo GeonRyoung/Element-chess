@@ -1,4 +1,5 @@
 #include "EC_NetworkSubsystem.h"
+#include "ECPacket.h"
 
 void UEC_NetworkSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
@@ -67,6 +68,38 @@ bool UEC_NetworkSubsystem::SendMessage(const FString& Message)
 	if (bSuccessful)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("[Network] Sent message: %s"), *Message);
+	}
+
+	return bSuccessful;
+}
+
+bool UEC_NetworkSubsystem::SendLoginRequest(const FString& ID, const FString& Password)
+{
+	if (!ClientSocket || ClientSocket->GetConnectionState() != SCS_Connected)
+	{
+		UE_LOG(LogTemp, Error, TEXT("[Network] 서버에 연결되어 있지 않습니다."));
+		return false;
+	}
+
+	FPKT_C2S_LoginReq Packet;
+	Packet.Header.Size = sizeof(FPKT_C2S_LoginReq);
+	Packet.Header.ID = (uint16)EPacketID::LoginReq;
+
+	FTCHARToUTF8 ConvertedID(*ID);
+	FTCHARToUTF8 ConvertedPW(*Password);
+
+	FMemory::Memzero(Packet.Username, 32);
+	FMemory::Memzero(Packet.Password, 32);
+
+	strncpy_s(Packet.Username, ConvertedID.Get(), 31);
+	strncpy_s(Packet.Password, ConvertedPW.Get(), 31);
+
+	int32 BytesSent = 0;
+	bool bSuccessful = ClientSocket->Send((uint8*)&Packet, Packet.Header.Size, BytesSent);
+ 
+	if (bSuccessful)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[Network] 로그인 요청 패킷 전송 완료! ID: %s"), *ID);
 	}
 
 	return bSuccessful;

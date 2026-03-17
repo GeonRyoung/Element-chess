@@ -9,6 +9,8 @@
 #include "SocketSubsystem.h"
 #include "Interfaces/IPv4/IPv4Address.h"
 
+
+
 #include "EC_NetworkSubsystem.generated.h"
 
 /**
@@ -31,6 +33,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, category = "Network")
 	bool SendMessage(const FString& Message);
+
+	UFUNCTION(BlueprintCallable, category = "Network")
+	bool SendLoginRequest(const FString& ID, const FString& Password);
 
 private:
 	FSocket* ClientSocket = nullptr;
