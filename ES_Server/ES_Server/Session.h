@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 enum class IO_TYPE
 {
@@ -25,6 +25,7 @@ public:
 
 	SOCKET GetSocket() { return _socket; }
 	uint64_t GetSessionId() { return _sessionId; }
+	char* GetRecvBuffer() { return _recvBuffer; }
 
 private:
 	SOCKET _socket = INVALID_SOCKET;

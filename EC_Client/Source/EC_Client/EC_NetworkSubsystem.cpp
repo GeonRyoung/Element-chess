@@ -1,4 +1,4 @@
-#include "EC_NetworkSubsystem.h"
+﻿#include "EC_NetworkSubsystem.h"
 #include "ECPacket.h"
 
 void UEC_NetworkSubsystem::Initialize(FSubsystemCollectionBase& Collection)
@@ -135,10 +135,14 @@ void UEC_NetworkSubsystem::ReceivePacket()
 			case (uint16)EPacketID::LoginRes:
 			{
 				FPKT_S2C_LoginRes* ResPacket = (FPKT_S2C_LoginRes*)ReceiveBuffer.GetData();
-				OnLoginResponseEvent.Broadcast(ResPacket->bSuccess);
+				FString ReceivedNickname = UTF8_TO_TCHAR(ResPacket->Nickname);
 
-				UE_LOG(LogTemp, Warning, TEXT("[Network] 로그인 응답 도착! 성공 여부: %s"),
-					ResPacket->bSuccess ? TEXT("True") : TEXT("False"));
+				OnLoginResponseEvent.Broadcast(ResPacket->bSuccess, ResPacket->bHasProfile, ReceivedNickname);
+
+				UE_LOG(LogTemp, Warning, TEXT("[Network] 로그인 응답! 성공: %s, 프로필: %s, 닉네임: %s"),
+					ResPacket->bSuccess ? TEXT("True") : TEXT("False"),
+					ResPacket->bHasProfile ? TEXT("True") : TEXT("False"),
+					*ReceivedNickname);
 				break;
 			}
 			default:

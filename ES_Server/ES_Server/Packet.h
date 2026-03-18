@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <cstdint>
 
 enum class EPacketId : uint16_t
@@ -27,6 +27,9 @@ struct PKT_S2C_LoginRes
 	PacketHeader header;
 	bool bSuccess;
 	int32_t accountId;
+
+	bool bHasProfile;
+	char nickname[32];
 };
 
-#pragma pack(pop)
+#pragma pack(pop)^

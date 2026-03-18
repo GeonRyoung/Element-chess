@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -13,7 +13,7 @@
 
 #include "EC_NetworkSubsystem.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnLoginResponse, bool, bIsSuccess);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnLoginResponse, bool, bIsSuccess, bool, bHasProfile, FString, Nickname);
 
 UCLASS()
 class EC_CLIENT_API UEC_NetworkSubsystem : public UGameInstanceSubsystem, public FTickableGameObject

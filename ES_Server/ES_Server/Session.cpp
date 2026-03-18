@@ -1,4 +1,4 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include "Session.h"
 
 Session::Session(uint64_t sessionId, SOCKET socket) : _sessionId(sessionId), _socket(socket)
@@ -15,7 +15,7 @@ void Session::Disconnect()
 {
 	if (_socket != INVALID_SOCKET)
 	{
-		cout << "[Session] " << _sessionId << "번 손님 퇴장!" << endl;
+		cout << "[Session] " << _sessionId << "번 클라이언트 퇴장!" << endl;
 		closesocket(_socket);
 		_socket = INVALID_SOCKET;
 	}

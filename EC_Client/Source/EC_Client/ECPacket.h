@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 
@@ -28,6 +28,8 @@ struct FPKT_S2C_LoginRes
 	FPacketHeader Header;
 	bool bSuccess;
 	int32 AccountId;
+	bool bHasProfile;
+	char Nickname[32];
 };
 
 #pragma pack(pop)

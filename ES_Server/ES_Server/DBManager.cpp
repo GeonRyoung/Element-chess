@@ -1,4 +1,4 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include "DBManager.h"
 
 /*=====================
@@ -45,7 +45,7 @@ void DBManager::Disconnect()
 int32_t DBManager::VerifyAccount(const string& username, const string& passwordHash) {
     if (!_conn) return -1;
 
-    string query = std::format("SELECT account_id, password_hash From user_account\n");
+    string query = std::format("SELECT account_id, password_hash FROM user_account WHERE username = '{}'", username);
 
     if (mysql_query(_conn, query.c_str()) == 0)
     {
