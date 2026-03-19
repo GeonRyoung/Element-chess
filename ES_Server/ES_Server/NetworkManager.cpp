@@ -123,6 +123,8 @@ void NetworkManager::WorkerThreadMain(HANDLE iocpHandle)
 				
 				if (bSuccess)
 				{
+					session->SendAccountId(accountId);
+
 					shared_ptr<Player> playerProfile = GDBManager->LoadPlayerProfile(accountId);
 
 					if (playerProfile != nullptr)
@@ -144,6 +146,33 @@ void NetworkManager::WorkerThreadMain(HANDLE iocpHandle)
 				if (bSuccess) cout << " -> 로그인 성공! 클라이언트에 맵 이동 명령을 하달합니다.\n";
 				else cout << " -> 로그인 실패! 클라이언트에 에러를 보냅니다.\n";
 
+				break;
+			}
+			case EPacketId::CreateNicknameReq:
+			{
+				PKT_C2S_CreateNicknameReq* req = (PKT_C2S_CreateNicknameReq*)recvBuf;
+				cout << "[Session " << session->GetSessionId() << "] 닉네임 생성 요청: " << req->nickname << "\n";
+
+				bool bSuccess = false;
+
+				int32_t accountId = session->GetAccountId();
+
+				if (accountId != 0)
+				{
+					bSuccess = GDBManager->CreatePlayerProfile(accountId, req->nickname);
+				}
+				else
+				{
+					cout << " -> 에러: 로그인되지 않은 유저의 생성 요청입니다!\n";
+				}
+
+				PKT_S2C_CreateNicknameRes res;
+				res.header.size = sizeof(PKT_S2C_CreateNicknameRes);
+				res.header.id = (uint16_t)EPacketId::CreateNicknameRes;
+				res.bSuccess = bSuccess;
+
+				session->Send((char*)&res, res.header.size);
+				if (bSuccess) cout << " -> 닉네임 생성 및 DB 저장 성공!\n";
 				break;
 			}
 			default:

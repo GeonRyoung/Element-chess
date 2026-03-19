@@ -4,7 +4,10 @@
 enum class EPacketId : uint16_t
 {
 	LoginReq = 1,
-	LoginRes = 2
+	LoginRes = 2,
+
+	CreateNicknameReq = 3,
+	CreateNicknameRes = 4
 };
 
 #pragma pack(push, 1)
@@ -32,4 +35,16 @@ struct PKT_S2C_LoginRes
 	char nickname[32];
 };
 
-#pragma pack(pop)^
+struct PKT_C2S_CreateNicknameReq
+{
+	PacketHeader header;
+	char nickname[32];
+};
+
+struct PKT_S2C_CreateNicknameRes
+{
+	PacketHeader header;
+	bool bSuccess;
+};
+
+#pragma pack(pop)

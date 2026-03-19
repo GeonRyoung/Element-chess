@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 struct UnitMasterData
 {
@@ -20,6 +20,7 @@ public:
 
 	void Init();
 	UnitMasterData* GetUnitData(int32_t unitId);
+
 
 private:
 	DataManager() = default;

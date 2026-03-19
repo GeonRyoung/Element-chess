@@ -14,6 +14,7 @@
 #include "EC_NetworkSubsystem.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnLoginResponse, bool, bIsSuccess, bool, bHasProfile, FString, Nickname);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnCreateNicknameResponse, bool, bIsSuccess);
 
 UCLASS()
 class EC_CLIENT_API UEC_NetworkSubsystem : public UGameInstanceSubsystem, public FTickableGameObject
@@ -43,12 +44,18 @@ public:
 
 	UFUNCTION(BlueprintCallable, category = "Network")
 	bool SendLoginRequest(const FString& ID, const FString& Password);
+	
+	UFUNCTION(BlueprintCallable, category = "Network")
+	bool SendCreateNicknameReques(const FString& Nickname);
 
 	UFUNCTION(BlueprintCallable, Category = "Network")
 	void ReceivePacket();
 
 	UPROPERTY(BlueprintAssignable, Category = "Network|Event")
 	FOnLoginResponse OnLoginResponseEvent;
+
+	UPROPERTY(BlueprintAssignable, Category = "Network|Event")
+	FOnCreateNicknameResponse OnCreateNicknameResponseEvent;
 
 private:
 	FSocket* ClientSocket = nullptr;

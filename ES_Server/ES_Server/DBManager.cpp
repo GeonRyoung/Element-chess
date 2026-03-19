@@ -99,3 +99,23 @@ shared_ptr<Player> DBManager::LoadPlayerProfile(int32_t accountId) {
     }
     return nullptr;
 }
+
+bool DBManager::CreatePlayerProfile(int32_t accountId, const string& nickname)
+{
+    if (!_conn) return false;
+
+    string query = std::format("INSERT INTO player_profile(account_id, nickname, gold, player_level) VALUES({}, '{}', 1000, 1)",
+        accountId, nickname);
+
+    if (mysql_query(_conn, query.c_str()) == 0)
+    {
+        return true;
+    }
+    else
+    {
+        cerr << " [DBManager] CreateProfile Query Error: " << mysql_error(_conn) << endl;
+        return false;
+    }
+
+    return false;
+}

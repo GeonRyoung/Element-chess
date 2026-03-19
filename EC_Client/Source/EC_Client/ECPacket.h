@@ -6,6 +6,9 @@ enum class EPacketID : uint16
 {
 	LoginReq = 1,
 	LoginRes = 2,
+
+	CreateNicknameReq = 3,
+	CreateNicknameRes = 4
 };
 
 #pragma pack(push, 1)
@@ -30,6 +33,18 @@ struct FPKT_S2C_LoginRes
 	int32 AccountId;
 	bool bHasProfile;
 	char Nickname[32];
+};
+
+struct FPKT_C2S_CreateNicknameReq
+{
+	FPacketHeader Header;
+	char Nickname[32];
+};
+
+struct FPKT_S2C_CreateNicknameRes
+{
+	FPacketHeader Header;
+	bool bSuccess;
 };
 
 #pragma pack(pop)

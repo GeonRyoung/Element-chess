@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "Player.h"
 
 class DBManager
@@ -25,6 +25,7 @@ public:
 
 	int32_t VerifyAccount(const string& username, const string& passwordHash);
 	shared_ptr<Player> LoadPlayerProfile(int32_t accountId);
+	bool CreatePlayerProfile(int32_t accountId, const string& nickname);
 
 	MYSQL* GetConnection() { return _conn; }
 private:
