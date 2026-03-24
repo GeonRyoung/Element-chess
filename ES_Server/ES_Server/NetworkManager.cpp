@@ -207,6 +207,38 @@ void NetworkManager::WorkerThreadMain(HANDLE iocpHandle)
 					if (bSuccess) cout << "게임 사작 성공!\n";
 					break;
 				}
+				case EPacketId::RefreshShopReq :
+				{
+					PKT_C2S_RefreshShopReq* req = (PKT_C2S_RefreshShopReq*)packetData;
+					cout << "[Session " << session->GetSessionId() << "] 상점 리롤 요청 수신!\n";
+
+					PKT_S2C_RefreshShopRes res;
+					res.header.size = sizeof(PKT_S2C_RefreshShopRes);
+					res.header.id = (uint16_t)EPacketId::CreateNicknameRes;
+
+					int32_t currentGold = 10;
+					int32_t rerollCost = 2;
+
+					if (currentGold >= rerollCost)
+					{
+						res.bSuccess = true;
+						res.remainGold = currentGold - rerollCost;
+
+						for (int i = 0; i < 5; i++)
+						{
+							res.shopUnits[i] = (rand() % 54) + 1;
+						}
+
+						cout << " -> 리롤 성공! 남은 골드: " << res.remainGold << " / 뽑힌 유닛: ";
+						for (int i = 0; i < 5; ++i) cout << res.shopUnits[i] << " ";
+						cout << "\n";
+					}
+					else
+					{
+						cout << " -> 리롤 실패: 골드가 부족합니다!\n";
+						res.remainGold = currentGold; // 돈이 없으니 그대로 돌려줌
+					}
+				}
 				default:
 				{
 					cout << "[Session] 알 수 없는 패킷 수신! ID: " << header->id << "\n";

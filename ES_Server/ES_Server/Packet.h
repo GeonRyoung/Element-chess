@@ -11,6 +11,9 @@ enum class EPacketId : uint16_t
 
 	EnterGameReq = 5,
 	EnterGameRes = 6,
+
+	RefreshShopReq = 7,
+	RefreshShopRes = 8,
 };
 
 #pragma pack(push, 1)
@@ -72,5 +75,22 @@ struct PKT_S2C_EnterGameRes
 	PacketHeader header;
 	bool bSuccess;
 };
+
+struct PKT_C2S_RefreshShopReq
+{
+	PacketHeader header;
+};
+
+struct PKT_S2C_RefreshShopRes
+{
+	PacketHeader header;
+	bool bSuccess;
+	int32_t remainGold;   
+	int32_t shopUnits[5];   
+};
+
+/*=================
+	리롤
+=================*/
 
 #pragma pack(pop)
