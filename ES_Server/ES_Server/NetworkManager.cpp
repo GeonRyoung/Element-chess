@@ -102,90 +102,127 @@ void NetworkManager::WorkerThreadMain(HANDLE iocpHandle)
 			cout << "[Session " << session->GetSessionId() << "] "
 				<< bytesTransferred << " 바이트의 데이터를 수신했습니다!\n";
 
-			char* recvBuf = session->GetRecvBuffer();
-			PacketHeader* header = (PacketHeader*)recvBuf;
-
-			switch (static_cast<EPacketId>(header->id))
+			if (session->GetRecvBuffer().OnWrite(bytesTransferred) == false)
 			{
-			case EPacketId::LoginReq:
+				session->Disconnect();
+				continue;
+			}
+
+			while (true)
 			{
-				PKT_C2S_LoginReq* loginReq = (PKT_C2S_LoginReq*)recvBuf;
-				cout << "[Session] ID:" << loginReq->username << " / PW: " << loginReq->password << "\n";
+				int32_t dataSize = session->GetRecvBuffer().DataSize();
+				if (dataSize < sizeof(PacketHeader))
+					break;
 
-				int32_t accountId = GDBManager->VerifyAccount(loginReq->username, loginReq->password);
-				bool bSuccess = (accountId != -1);
+				PacketHeader* header = (PacketHeader*)session->GetRecvBuffer().ReadPos();
+				if (dataSize < header->size)
+					break;
 
-				PKT_S2C_LoginRes loginRes;
-				loginRes.header.size = sizeof(PKT_S2C_LoginRes);
-				loginRes.header.id = (uint16_t)EPacketId::LoginRes;
-				loginRes.bSuccess = bSuccess;
-				loginRes.accountId = bSuccess ? accountId : 0;
-				
-				if (bSuccess)
+				char* packetData = session->GetRecvBuffer().ReadPos();
+				switch (static_cast<EPacketId>(header->id))
 				{
-					session->SendAccountId(accountId);
+				case EPacketId::LoginReq:
+				{
+					PKT_C2S_LoginReq* loginReq = (PKT_C2S_LoginReq*)packetData;
+					cout << "[Session] ID:" << loginReq->username << " / PW: " << loginReq->password << "\n";
 
-					shared_ptr<Player> playerProfile = GDBManager->LoadPlayerProfile(accountId);
+					int32_t accountId = GDBManager->VerifyAccount(loginReq->username, loginReq->password);
+					bool bSuccess = (accountId != -1);
 
-					if (playerProfile != nullptr)
+					PKT_S2C_LoginRes loginRes;
+					loginRes.header.size = sizeof(PKT_S2C_LoginRes);
+					loginRes.header.id = (uint16_t)EPacketId::LoginRes;
+					loginRes.bSuccess = bSuccess;
+					loginRes.accountId = bSuccess ? accountId : 0;
+
+					if (bSuccess)
 					{
-						loginRes.bHasProfile = true;
-						strncpy_s(loginRes.nickname, playerProfile->GetNickname().c_str(), 31);
-						cout << " -> 기존 유저 접속! 닉네임: " << loginRes.nickname << "\n";
+						session->SendAccountId(accountId);
+
+						shared_ptr<Player> playerProfile = GDBManager->LoadPlayerProfile(accountId);
+
+						if (playerProfile != nullptr)
+						{
+							loginRes.bHasProfile = true;
+							strncpy_s(loginRes.nickname, playerProfile->GetNickname().c_str(), 31);
+							cout << " -> 기존 유저 접속! 닉네임: " << loginRes.nickname << "\n";
+						}
+						else
+						{
+							loginRes.bHasProfile = false;
+							memset(loginRes.nickname, 0, 32);
+							cout << " -> 신규 유저 접속! 닉네임 생성 요청 필요.\n";
+						}
+					}
+
+					session->Send((char*)&loginRes, loginRes.header.size);
+
+					if (bSuccess) cout << " -> 로그인 성공! 클라이언트에 맵 이동 명령을 하달합니다.\n";
+					else cout << " -> 로그인 실패! 클라이언트에 에러를 보냅니다.\n";
+
+					break;
+				}
+				case EPacketId::CreateNicknameReq:
+				{
+					PKT_C2S_CreateNicknameReq* req = (PKT_C2S_CreateNicknameReq*)packetData;
+					cout << "[Session " << session->GetSessionId() << "] 닉네임 생성 요청: " << req->nickname << "\n";
+
+					bool bSuccess = false;
+
+					int32_t accountId = session->GetAccountId();
+
+					if (accountId != 0)
+					{
+						bSuccess = GDBManager->CreatePlayerProfile(accountId, req->nickname);
 					}
 					else
 					{
-						loginRes.bHasProfile = false;
-						memset(loginRes.nickname, 0, 32); 
-						cout << " -> 신규 유저 접속! 닉네임 생성 요청 필요.\n";
+						cout << " -> 에러: 로그인되지 않은 유저의 생성 요청입니다!\n";
 					}
+
+					PKT_S2C_CreateNicknameRes res;
+					res.header.size = sizeof(PKT_S2C_CreateNicknameRes);
+					res.header.id = (uint16_t)EPacketId::CreateNicknameRes;
+					res.bSuccess = bSuccess;
+
+					session->Send((char*)&res, res.header.size);
+					if (bSuccess) cout << " -> 닉네임 생성 및 DB 저장 성공!\n";
+					break;
 				}
-
-				session->Send((char*)&loginRes, loginRes.header.size);
-
-				if (bSuccess) cout << " -> 로그인 성공! 클라이언트에 맵 이동 명령을 하달합니다.\n";
-				else cout << " -> 로그인 실패! 클라이언트에 에러를 보냅니다.\n";
-
-				break;
-			}
-			case EPacketId::CreateNicknameReq:
-			{
-				PKT_C2S_CreateNicknameReq* req = (PKT_C2S_CreateNicknameReq*)recvBuf;
-				cout << "[Session " << session->GetSessionId() << "] 닉네임 생성 요청: " << req->nickname << "\n";
-
-				bool bSuccess = false;
-
-				int32_t accountId = session->GetAccountId();
-
-				if (accountId != 0)
+				case EPacketId::EnterGameReq:
 				{
-					bSuccess = GDBManager->CreatePlayerProfile(accountId, req->nickname);
+					PKT_C2S_EnterGameReq* req = (PKT_C2S_EnterGameReq*)packetData;
+					cout << "[Session] 게임 시작 요청 " << "\n";
+
+					bool bSuccess = false;
+
+					//[TO DO] 게임 데이터 로드
+
+					PKT_S2C_EnterGameRes res;
+					res.header.size = sizeof(PKT_S2C_EnterGameRes);
+					res.header.id = (uint16_t)EPacketId::EnterGameRes;
+					res.bSuccess = bSuccess;
+
+					session->Send((char*)&res, res.header.size);
+					if (bSuccess) cout << "게임 사작 성공!\n";
+					break;
 				}
-				else
+				default:
 				{
-					cout << " -> 에러: 로그인되지 않은 유저의 생성 요청입니다!\n";
+					cout << "[Session] 알 수 없는 패킷 수신! ID: " << header->id << "\n";
+					break;
 				}
-
-				PKT_S2C_CreateNicknameRes res;
-				res.header.size = sizeof(PKT_S2C_CreateNicknameRes);
-				res.header.id = (uint16_t)EPacketId::CreateNicknameRes;
-				res.bSuccess = bSuccess;
-
-				session->Send((char*)&res, res.header.size);
-				if (bSuccess) cout << " -> 닉네임 생성 및 DB 저장 성공!\n";
-				break;
+				}
+				session->GetRecvBuffer().OnRead(header->size);
 			}
-			default:
-			{
-				cout << "[Session] 알 수 없는 패킷 수신! ID: " << header->id << "\n";
-				break;
-			}
-			}
+			session->GetRecvBuffer().Clean();
 			session->Recv();
 		}
 		else if (overlappedEx->type == IO_TYPE::WRITE)
 		{
 			cout << "[Session " << session->GetSessionId() << "] 데이터 송신 완료!\n";
+			session->OnSendCompleted();
 		}
 	}
 }
+

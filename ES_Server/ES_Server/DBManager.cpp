@@ -43,6 +43,8 @@ void DBManager::Disconnect()
 =====================*/
 
 int32_t DBManager::VerifyAccount(const string& username, const string& passwordHash) {
+    std::lock_guard<std::mutex> lock(_dbLock);
+
     if (!_conn) return -1;
 
     string query = std::format("SELECT account_id, password_hash FROM user_account WHERE username = '{}'", username);
@@ -74,6 +76,8 @@ int32_t DBManager::VerifyAccount(const string& username, const string& passwordH
 }
 
 shared_ptr<Player> DBManager::LoadPlayerProfile(int32_t accountId) {
+    std::lock_guard<std::mutex> lock(_dbLock);
+
     if (!_conn) return nullptr;
 
     string query = std::format("SELECT profile_id,nickname, gold, player_level FROM player_profile WHERE account_id = {}", accountId);
@@ -102,6 +106,7 @@ shared_ptr<Player> DBManager::LoadPlayerProfile(int32_t accountId) {
 
 bool DBManager::CreatePlayerProfile(int32_t accountId, const string& nickname)
 {
+    std::lock_guard<std::mutex> lock(_dbLock);
     if (!_conn) return false;
 
     string query = std::format("INSERT INTO player_profile(account_id, nickname, gold, player_level) VALUES({}, '{}', 1000, 1)",

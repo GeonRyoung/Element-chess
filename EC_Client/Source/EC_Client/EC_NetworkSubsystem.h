@@ -46,7 +46,10 @@ public:
 	bool SendLoginRequest(const FString& ID, const FString& Password);
 	
 	UFUNCTION(BlueprintCallable, category = "Network")
-	bool SendCreateNicknameReques(const FString& Nickname);
+	bool SendCreateNicknameRequest(const FString& Nickname);
+
+	UFUNCTION(BlueprintCallable, category = "Network")
+	bool EnterGameTequest();
 
 	UFUNCTION(BlueprintCallable, Category = "Network")
 	void ReceivePacket();

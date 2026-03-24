@@ -27,8 +27,8 @@ void Session::Recv()
 	_recvOverlapped.type = IO_TYPE::READ;
 
 	WSABUF wsaBuf;
-	wsaBuf.buf = _recvBuffer;
-	wsaBuf.len = sizeof(_recvBuffer);
+	wsaBuf.buf = _recvBuffer.WritePos();
+	wsaBuf.len = _recvBuffer.FreeSize();
 
 	DWORD flags = 0;
 	DWORD recvLen = 0;
@@ -47,12 +47,33 @@ void Session::Recv()
 
 void Session::Send(char* sendBuffer, int32_t sendLen)
 {
+	std::vector<char> sendData(sendBuffer, sendBuffer + sendLen);
+
+	{
+		std::lock_guard<std::mutex> lock(_sendLock);
+		_sendQueue.push(sendData);
+	}
+
+	if (_isSending.exchange(true) == false)
+	{
+		RegisterSend();
+	}
+}
+
+void Session::RegisterSend()
+{
+	{
+		std::lock_guard<std::mutex> lock(_sendLock);
+		_currentSendBuffer = _sendQueue.front();
+		_sendQueue.pop();
+	}
+
 	ZeroMemory(&_sendOverlapped, sizeof(_sendOverlapped));
 	_sendOverlapped.type = IO_TYPE::WRITE;
 
 	WSABUF wsaBuf;
-	wsaBuf.buf = sendBuffer;
-	wsaBuf.len = sendLen;
+	wsaBuf.buf = _currentSendBuffer.data();
+	wsaBuf.len = (ULONG)_currentSendBuffer.size();
 
 	DWORD sendBytes = 0;
 
@@ -62,7 +83,22 @@ void Session::Send(char* sendBuffer, int32_t sendLen)
 		if (errCode != WSA_IO_PENDING)
 		{
 			cout << "Send 예약 실패! ErrorCode: " << errCode << endl;
+			_isSending = false; 
 			Disconnect();
 		}
 	}
 }
+
+void Session::OnSendCompleted()
+{
+	std::lock_guard<std::mutex> lock(_sendLock);
+	if (_sendQueue.empty())
+	{
+		_isSending = false;
+	}
+	else
+	{
+		RegisterSend();
+	}
+}
+

@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 /*==============
 	Network
@@ -8,6 +8,7 @@
 #include "Packet.h"
 #include <thread>
 #include <atomic>
+#include <mutex>
 
 /*==============
 	Structures

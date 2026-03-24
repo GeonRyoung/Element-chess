@@ -114,7 +114,7 @@ bool UEC_NetworkSubsystem::SendLoginRequest(const FString& ID, const FString& Pa
 	return bSuccessful;
 }
 
-bool UEC_NetworkSubsystem::SendCreateNicknameReques(const FString& Nickname)
+bool UEC_NetworkSubsystem::SendCreateNicknameRequest(const FString& Nickname)
 {
 	if (!ClientSocket || ClientSocket->GetConnectionState() != SCS_Connected)
 	{
@@ -136,6 +136,28 @@ bool UEC_NetworkSubsystem::SendCreateNicknameReques(const FString& Nickname)
 	if (bSuccessful)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("[Network] 닉네임 생성 요청 패킷 전송 완료! 닉네임: %s"), *Nickname);
+	}
+
+	return bSuccessful;
+}
+
+bool UEC_NetworkSubsystem::EnterGameTequest()
+{
+	if (!ClientSocket || ClientSocket->GetConnectionState() != SCS_Connected)
+	{
+		UE_LOG(LogTemp, Error, TEXT("[Network] 서버에 연결되어 있지 않습니다."));
+		return false;
+	}
+
+	FPKT_C2S_CreateNicknameReq Packet;
+	Packet.Header.Size = sizeof(FPKT_C2S_CreateNicknameReq);
+	Packet.Header.ID = (uint16)EPacketID::CreateNicknameReq;
+	int32 ByteSent = 0;
+	bool bSuccessful = ClientSocket->Send((uint8*)&Packet, Packet.Header.Size, ByteSent);
+
+	if (bSuccessful)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[Network] 게임 진입 요청"));
 	}
 
 	return bSuccessful;
@@ -177,6 +199,12 @@ void UEC_NetworkSubsystem::ReceivePacket()
 				FPKT_S2C_CreateNicknameRes* ResPacket = (FPKT_S2C_CreateNicknameRes*)ReceiveBuffer.GetData();
 
 				OnCreateNicknameResponseEvent.Broadcast(ResPacket->bSuccess);
+				break;
+			}
+			case (uint16)EPacketID::EnterGameRes:
+			{
+				FPKT_S2C_EnterGameRes * ResPacket = (FPKT_S2C_EnterGameRes*)ReceiveBuffer.GetData();
+				//[TODO]
 				break;
 			}
 			default:

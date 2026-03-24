@@ -33,5 +33,6 @@ private:
 	~DBManager() { Disconnect(); }
 
 	MYSQL* _conn = nullptr;
+	std::mutex _dbLock;
 };
 

@@ -34,6 +34,12 @@
     <ClCompile Include="NetworkManager.cpp">
       <Filter>Network</Filter>
     </ClCompile>
+    <ClCompile Include="GameSession.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="RecvBuffer.cpp">
+      <Filter>Network</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -58,6 +64,12 @@
       <Filter>Network</Filter>
     </ClInclude>
     <ClInclude Include="NetworkManager.h">
+      <Filter>Network</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSession.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="RecvBuffer.h">
       <Filter>Network</Filter>
     </ClInclude>
   </ItemGroup>

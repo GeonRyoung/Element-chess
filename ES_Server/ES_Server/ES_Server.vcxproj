@@ -144,19 +144,23 @@
     <ClCompile Include="DataManager.cpp" />
     <ClCompile Include="DBManager.cpp" />
     <ClCompile Include="ES_Server.cpp" />
+    <ClCompile Include="GameSession.cpp" />
     <ClCompile Include="NetworkManager.cpp" />
     <ClCompile Include="pch.cpp" />
     <ClCompile Include="Player.cpp" />
+    <ClCompile Include="RecvBuffer.cpp" />
     <ClCompile Include="Session.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DataManager.h" />
     <ClInclude Include="DBManager.h" />
+    <ClInclude Include="GameSession.h" />
     <ClInclude Include="Macro.h" />
     <ClInclude Include="NetworkManager.h" />
     <ClInclude Include="Packet.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Player.h" />
+    <ClInclude Include="RecvBuffer.h" />
     <ClInclude Include="Session.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
