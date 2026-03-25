@@ -15,10 +15,17 @@ public:
 	=====================*/
 
 	bool Connect(const string& host, int port, const string& user,
-		const string& password, const string& schema);
+		const string& password, const string& schema, int32_t poolSize = 10);
 	
 	void Disconnect();
 
+	/*=====================
+		커넥션 대여 및 반납 
+	=====================*/
+	MYSQL* PopConnection();
+	void PushConnection(MYSQL* conn);
+	
+	
 	/*=====================
 		로그인
 	=====================*/
@@ -27,12 +34,28 @@ public:
 	shared_ptr<Player> LoadPlayerProfile(int32_t accountId);
 	bool CreatePlayerProfile(int32_t accountId, const string& nickname);
 
-	MYSQL* GetConnection() { return _conn; }
 private:
 	DBManager() = default;
 	~DBManager() { Disconnect(); }
 
-	MYSQL* _conn = nullptr;
-	std::mutex _dbLock;
+	std::queue<MYSQL*> _connectionPool;
+	std::mutex _poolLock;
+	std::condition_variable _poolCv;
 };
 
+class DBConnectionGuard
+{
+public:
+	DBConnectionGuard() 
+	{ 
+		_conn = DBManager::GetInstance()->PopConnection(); 
+	}
+	~DBConnectionGuard() 
+	{ 
+		if (_conn) DBManager::GetInstance()->PushConnection(_conn); 
+	}
+	MYSQL* Get() { return _conn; }
+
+private:
+	MYSQL* _conn = nullptr;
+};

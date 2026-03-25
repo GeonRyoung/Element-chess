@@ -4,7 +4,9 @@
 
 void DataManager::Init()
 {
-	MYSQL* conn = GDBManager->GetConnection();
+	DBConnectionGuard guard;
+	MYSQL* conn = guard.Get();
+
 	if (!conn)
 	{
 		cerr << " [DataManager] DB Connection is null!" << "\n";
@@ -15,8 +17,7 @@ void DataManager::Init()
 
 	if (mysql_query(conn, query) == 0)
 	{
-		MYSQL_RES* result = mysql_store_result(conn);
-		if (result)
+		if (MYSQL_RES* result = mysql_store_result(conn))
 		{
 			MYSQL_ROW row;
 			while ((row = mysql_fetch_row(result)))

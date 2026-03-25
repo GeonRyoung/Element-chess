@@ -12,6 +12,9 @@ enum class EPacketID : uint16
 
 	EnterGameReq = 5,
 	EnterGameRes = 6,
+
+	RefreshShopReq = 7,
+	RefreshShopRes = 8,
 };
 
 #pragma pack(push, 1)
@@ -79,6 +82,24 @@ struct FPKT_S2C_EnterGameRes
 
 	int32_t maxBattleSlots;
 	int32_t maxBenchSlots;
+};
+
+/*=================
+	리롤
+=================*/
+
+struct FPKT_C2S_RefreshShopReq
+{
+	FPacketHeader header;
+};
+
+// [서버 -> 클라] 상점 갱신 결과 전달
+struct FPKT_S2C_RefreshShopRes
+{
+	FPacketHeader header;
+	bool bSuccess;
+	int32_t remainGold;
+	int32_t shopUnits[5];
 };
 
 #pragma pack(pop)

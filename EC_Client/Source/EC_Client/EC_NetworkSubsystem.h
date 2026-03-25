@@ -49,7 +49,10 @@ public:
 	bool SendCreateNicknameRequest(const FString& Nickname);
 
 	UFUNCTION(BlueprintCallable, category = "Network")
-	bool EnterGameTequest();
+	bool EnterGameRequest();
+
+	UFUNCTION(BlueprintCallable, category = "Network")
+	bool SendRefreshShopRequest();
 
 	UFUNCTION(BlueprintCallable, Category = "Network")
 	void ReceivePacket();

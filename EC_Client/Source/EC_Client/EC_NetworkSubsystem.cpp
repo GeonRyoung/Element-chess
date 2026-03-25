@@ -141,7 +141,7 @@ bool UEC_NetworkSubsystem::SendCreateNicknameRequest(const FString& Nickname)
 	return bSuccessful;
 }
 
-bool UEC_NetworkSubsystem::EnterGameTequest()
+bool UEC_NetworkSubsystem::EnterGameRequest()
 {
 	if (!ClientSocket || ClientSocket->GetConnectionState() != SCS_Connected)
 	{
@@ -158,6 +158,23 @@ bool UEC_NetworkSubsystem::EnterGameTequest()
 	if (bSuccessful)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("[Network] 게임 진입 요청"));
+	}
+
+	return bSuccessful;
+}
+
+bool UEC_NetworkSubsystem::SendRefreshShopRequest()
+{
+	FPKT_C2S_RefreshShopReq Packet;
+	Packet.header.Size = sizeof(FPKT_C2S_RefreshShopReq);
+	Packet.header.ID = (uint16_t)EPacketID::RefreshShopReq;
+	int32 BytesSent = 0;
+
+	bool bSuccessful = ClientSocket->Send((uint8*)&Packet, Packet.header.Size, BytesSent);
+
+	if (bSuccessful)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[Network] 상점 리롤 패킷(2골드 소모) 서버로 전송 완료!"));
 	}
 
 	return bSuccessful;

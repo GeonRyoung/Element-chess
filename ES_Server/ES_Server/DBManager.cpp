@@ -5,53 +5,83 @@
     DB 연결
 =====================*/
 
-bool DBManager::Connect(const string& host, int port, const string& user, const string& password, const string& schemaName) {
-    
-    _conn = mysql_init(nullptr);
-    if (_conn == nullptr)
+bool DBManager::Connect(const string& host, int port, const string& user, const string& password, const string& schema,
+    int32_t poolSize)
+{
+    for (int i = 0; i < poolSize; i++)
     {
-        cerr << "[DBManager] mysql_init failed!\n";
-        return false;
+        MYSQL* conn = mysql_init(nullptr);
+        if (conn == nullptr) return false;
+        
+        if (mysql_real_connect(conn, host.c_str(), user.c_str(), password.c_str(),
+            schema.c_str(), port, nullptr, 0 ) == 0)
+        {
+            mysql_close(conn);
+            return false;
+        }
+        
+        mysql_set_character_set(conn, "utf8mb4");
+        
+        _connectionPool.push(conn);
     }
-
-    if (mysql_real_connect(_conn, host.c_str(), user.c_str(), password.c_str(),
-        schemaName.c_str(), port, nullptr, 0) == 0)
-    {
-        mysql_close(_conn);
-        _conn = nullptr;
-        return false;
-    }   
-
-    mysql_set_character_set(_conn, "utf8mb4");
-
-    cout << " [DBManager] Successfully connected to database: " << schemaName << endl;
+    cout << " [DBManager] Successfully connected to database: " << schema << " (Pool Size: " << poolSize << ")" << endl;
     return true;
 }
 
 void DBManager::Disconnect()
 {
-    if (_conn)
+    std::lock_guard<std::mutex> lock(_poolLock);
+    while (!_connectionPool.empty())
     {
-        mysql_close(_conn);
-        _conn = nullptr;
-        cout << " [DBManager] Disconnected from database." << endl;
+        MYSQL* conn = _connectionPool.front();
+        _connectionPool.pop();
+        if (conn) mysql_close(conn);
     }
+    cout << " [DBManager] Disconnected from database." << endl;
+}
+
+
+
+/*=====================
+    커넥션 대여 및 반납
+=====================*/
+
+MYSQL* DBManager::PopConnection()
+{
+    std::unique_lock<std::mutex> lock(_poolLock);
+    
+    _poolCv.wait(lock, [this]() { return !_connectionPool.empty(); });
+
+    MYSQL* conn = _connectionPool.front();
+    _connectionPool.pop();
+    return conn;
+}
+
+void DBManager::PushConnection(MYSQL* conn)
+{
+    if (conn == nullptr) return;
+
+    std::unique_lock<std::mutex> lock(_poolLock);
+    _connectionPool.push(conn);
+    
+    _poolCv.notify_one();
 }
 
 /*=====================
     로그인
 =====================*/
 
-int32_t DBManager::VerifyAccount(const string& username, const string& passwordHash) {
-    std::lock_guard<std::mutex> lock(_dbLock);
 
-    if (!_conn) return -1;
+
+int32_t DBManager::VerifyAccount(const string& username, const string& passwordHash) {
+    DBConnectionGuard guard;
+    MYSQL* conn = guard.Get();
 
     string query = std::format("SELECT account_id, password_hash FROM user_account WHERE username = '{}'", username);
 
-    if (mysql_query(_conn, query.c_str()) == 0)
+    if (mysql_query(conn, query.c_str()) == 0)
     {
-        MYSQL_RES* result = mysql_store_result(_conn);
+        MYSQL_RES* result = mysql_store_result(conn);
         if (result)
         {
             MYSQL_ROW row = mysql_fetch_row(result);
@@ -70,21 +100,20 @@ int32_t DBManager::VerifyAccount(const string& username, const string& passwordH
     }
     else
     {
-        cerr << " [DBManager] VerifyAccount Query Error: " << mysql_error(_conn) << endl;
+        cerr << " [DBManager] VerifyAccount Query Error: " << mysql_error(conn) << endl;
     }
     return -1;
 }
 
 shared_ptr<Player> DBManager::LoadPlayerProfile(int32_t accountId) {
-    std::lock_guard<std::mutex> lock(_dbLock);
-
-    if (!_conn) return nullptr;
+    DBConnectionGuard guard;
+    MYSQL* conn = guard.Get();
 
     string query = std::format("SELECT profile_id,nickname, gold, player_level FROM player_profile WHERE account_id = {}", accountId);
     
-    if (mysql_query(_conn, query.c_str()) == 0)
+    if (mysql_query(conn, query.c_str()) == 0)
     {
-        MYSQL_RES* result = mysql_store_result(_conn);
+        MYSQL_RES* result = mysql_store_result(conn);
         if (result)
         {
             MYSQL_ROW row = mysql_fetch_row(result);
@@ -106,21 +135,19 @@ shared_ptr<Player> DBManager::LoadPlayerProfile(int32_t accountId) {
 
 bool DBManager::CreatePlayerProfile(int32_t accountId, const string& nickname)
 {
-    std::lock_guard<std::mutex> lock(_dbLock);
-    if (!_conn) return false;
+    DBConnectionGuard guard;
+    MYSQL* conn = guard.Get();
 
     string query = std::format("INSERT INTO player_profile(account_id, nickname, gold, player_level) VALUES({}, '{}', 1000, 1)",
         accountId, nickname);
 
-    if (mysql_query(_conn, query.c_str()) == 0)
+    if (mysql_query(conn, query.c_str()) == 0)
     {
         return true;
     }
     else
     {
-        cerr << " [DBManager] CreateProfile Query Error: " << mysql_error(_conn) << endl;
+        cerr << " [DBManager] CreateProfile Query Error: " << mysql_error(conn) << endl;
         return false;
     }
-
-    return false;
 }
