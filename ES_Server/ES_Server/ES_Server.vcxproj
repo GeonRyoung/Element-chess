@@ -141,6 +141,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ClientPacketHandler.cpp" />
     <ClCompile Include="DataManager.cpp" />
     <ClCompile Include="DBManager.cpp" />
     <ClCompile Include="ES_Server.cpp" />
@@ -152,6 +153,7 @@
     <ClCompile Include="Session.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ClientPacketHandler.h" />
     <ClInclude Include="DataManager.h" />
     <ClInclude Include="DBManager.h" />
     <ClInclude Include="GameSession.h" />

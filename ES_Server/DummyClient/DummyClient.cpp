@@ -65,7 +65,7 @@ int main()
 	vector<thread> threads;
 
 	// 500명의 가짜 유저(스레드)를 동시에 생성해서 서버로 돌격시킵니다!
-	for (int i = 0; i < 3000; ++i)
+	for (int i = 0; i < 5000; ++i)
 	{
 		threads.emplace_back([i]() { DummyClientTask(i); });
 	}

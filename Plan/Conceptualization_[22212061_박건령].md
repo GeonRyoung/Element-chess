@@ -6,7 +6,8 @@
 
 
 **Student Info:** 22212061 / 박건령 / rjsfud7467@gmail.com
-**Github***: https://github.com/GeonRyoung/Element-chess
+<br/>
+**Github**: https://github.com/GeonRyoung/Element-chess
 
 ---
 

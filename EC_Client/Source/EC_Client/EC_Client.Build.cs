@@ -9,7 +9,7 @@ public class EC_Client : ModuleRules
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
 		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject",
-			"Engine", "InputCore", "EnhancedInput", "Sockets", "Networking" });
+			"Engine", "InputCore", "EnhancedInput", "Sockets", "Networking", "UMG" });
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
 

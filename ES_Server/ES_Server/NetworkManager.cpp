@@ -2,6 +2,8 @@
 #include "NetworkManager.h"
 #include "Session.h"
 #include "DBManager.h"
+#include "ClientPacketHandler.h"
+#include "RecvBuffer.h"
 
 NetworkManager::NetworkManager()
 {
@@ -111,140 +113,15 @@ void NetworkManager::WorkerThreadMain(HANDLE iocpHandle)
 			while (true)
 			{
 				int32_t dataSize = session->GetRecvBuffer().DataSize();
-				if (dataSize < sizeof(PacketHeader))
-					break;
+				if (dataSize < sizeof(PacketHeader)) break;
 
 				PacketHeader* header = (PacketHeader*)session->GetRecvBuffer().ReadPos();
-				if (dataSize < header->size)
-					break;
+				if (dataSize < header->size) break;
 
 				char* packetData = session->GetRecvBuffer().ReadPos();
-				switch (static_cast<EPacketId>(header->id))
-				{
-				case EPacketId::LoginReq:
-				{
-					PKT_C2S_LoginReq* loginReq = (PKT_C2S_LoginReq*)packetData;
-					cout << "[Session] ID:" << loginReq->username << " / PW: " << loginReq->password << "\n";
+				
+				ClientPacketHandler::HandlePacket(session, packetData, header->id);
 
-					int32_t accountId = GDBManager->VerifyAccount(loginReq->username, loginReq->password);
-					bool bSuccess = (accountId != -1);
-
-					PKT_S2C_LoginRes loginRes;
-					loginRes.header.size = sizeof(PKT_S2C_LoginRes);
-					loginRes.header.id = (uint16_t)EPacketId::LoginRes;
-					loginRes.bSuccess = bSuccess;
-					loginRes.accountId = bSuccess ? accountId : 0;
-
-					if (bSuccess)
-					{
-						session->SendAccountId(accountId);
-
-						shared_ptr<Player> playerProfile = GDBManager->LoadPlayerProfile(accountId);
-
-						if (playerProfile != nullptr)
-						{
-							loginRes.bHasProfile = true;
-							strncpy_s(loginRes.nickname, playerProfile->GetNickname().c_str(), 31);
-							cout << " -> 기존 유저 접속! 닉네임: " << loginRes.nickname << "\n";
-						}
-						else
-						{
-							loginRes.bHasProfile = false;
-							memset(loginRes.nickname, 0, 32);
-							cout << " -> 신규 유저 접속! 닉네임 생성 요청 필요.\n";
-						}
-					}
-
-					session->Send((char*)&loginRes, loginRes.header.size);
-
-					if (bSuccess) cout << " -> 로그인 성공! 클라이언트에 맵 이동 명령을 하달합니다.\n";
-					else cout << " -> 로그인 실패! 클라이언트에 에러를 보냅니다.\n";
-
-					break;
-				}
-				case EPacketId::CreateNicknameReq:
-				{
-					PKT_C2S_CreateNicknameReq* req = (PKT_C2S_CreateNicknameReq*)packetData;
-					cout << "[Session " << session->GetSessionId() << "] 닉네임 생성 요청: " << req->nickname << "\n";
-
-					bool bSuccess = false;
-
-					int32_t accountId = session->GetAccountId();
-
-					if (accountId != 0)
-					{
-						bSuccess = GDBManager->CreatePlayerProfile(accountId, req->nickname);
-					}
-					else
-					{
-						cout << " -> 에러: 로그인되지 않은 유저의 생성 요청입니다!\n";
-					}
-
-					PKT_S2C_CreateNicknameRes res;
-					res.header.size = sizeof(PKT_S2C_CreateNicknameRes);
-					res.header.id = (uint16_t)EPacketId::CreateNicknameRes;
-					res.bSuccess = bSuccess;
-
-					session->Send((char*)&res, res.header.size);
-					if (bSuccess) cout << " -> 닉네임 생성 및 DB 저장 성공!\n";
-					break;
-				}
-				case EPacketId::EnterGameReq:
-				{
-					PKT_C2S_EnterGameReq* req = (PKT_C2S_EnterGameReq*)packetData;
-					cout << "[Session] 게임 시작 요청 " << "\n";
-
-					bool bSuccess = false;
-
-					//[TO DO] 게임 데이터 로드
-
-					PKT_S2C_EnterGameRes res;
-					res.header.size = sizeof(PKT_S2C_EnterGameRes);
-					res.header.id = (uint16_t)EPacketId::EnterGameRes;
-					res.bSuccess = bSuccess;
-
-					session->Send((char*)&res, res.header.size);
-					if (bSuccess) cout << "게임 사작 성공!\n";
-					break;
-				}
-				case EPacketId::RefreshShopReq :
-				{
-					PKT_C2S_RefreshShopReq* req = (PKT_C2S_RefreshShopReq*)packetData;
-					cout << "[Session " << session->GetSessionId() << "] 상점 리롤 요청 수신!\n";
-
-					PKT_S2C_RefreshShopRes res;
-					res.header.size = sizeof(PKT_S2C_RefreshShopRes);
-					res.header.id = (uint16_t)EPacketId::CreateNicknameRes;
-
-					int32_t currentGold = 10;
-					int32_t rerollCost = 2;
-
-					if (currentGold >= rerollCost)
-					{
-						res.bSuccess = true;
-						res.remainGold = currentGold - rerollCost;
-
-						for (int i = 0; i < 5; i++)
-						{
-							res.shopUnits[i] = (rand() % 54) + 1;
-						}
-
-						cout << " -> 리롤 성공! 남은 골드: " << res.remainGold << " / 뽑힌 유닛: ";
-						for (int i = 0; i < 5; ++i) cout << res.shopUnits[i] << " ";
-						cout << "\n";
-					}
-					else
-					{
-						cout << " -> 리롤 실패: 골드가 부족합니다!\n";
-						res.remainGold = currentGold; // 돈이 없으니 그대로 돌려줌
-					}
-				}
-				default:
-				{
-					cout << "[Session] 알 수 없는 패킷 수신! ID: " << header->id << "\n";
-					break;
-				}
-				}
 				session->GetRecvBuffer().OnRead(header->size);
 			}
 			session->GetRecvBuffer().Clean();

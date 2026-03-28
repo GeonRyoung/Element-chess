@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
+    <data-source source="LOCAL" name="element_auto@localhost" uuid="2b64d551-45f7-49aa-8183-a88c6b16d4c2">
+      <driver-ref>mysql.8</driver-ref>
+      <synchronize>true</synchronize>
+      <configured-by-url>true</configured-by-url>
+      <jdbc-driver>com.mysql.cj.jdbc.Driver</jdbc-driver>
+      <jdbc-url>jdbc:mysql://localhost:3306/element_auto?user=root&amp;password=rjsfud5605!!</jdbc-url>
+      <working-dir>$ProjectFileDir$</working-dir>
+    </data-source>
+  </component>
+</project>

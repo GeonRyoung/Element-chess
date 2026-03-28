@@ -1,5 +1,7 @@
 ﻿#include "pch.h"
 #include "Session.h"
+#include "RecvBuffer.h"
+#include "GameSession.h"
 
 Session::Session(uint64_t sessionId, SOCKET socket) : _sessionId(sessionId), _socket(socket)
 {
@@ -8,7 +10,12 @@ Session::Session(uint64_t sessionId, SOCKET socket) : _sessionId(sessionId), _so
 
 Session::~Session()
 {
-	cout << "[Session] " << _sessionId << "번 세션 소멸" << endl;
+	if (_gameSession)
+	{
+		delete _gameSession;
+		_gameSession = nullptr;
+	}
+	cout << "[Session] " << _sessionId << "번 세션 및 게임 데이터 소멸" << endl;
 }
 
 void Session::Disconnect()
@@ -91,14 +98,15 @@ void Session::RegisterSend()
 
 void Session::OnSendCompleted()
 {
-	std::lock_guard<std::mutex> lock(_sendLock);
-	if (_sendQueue.empty())
 	{
-		_isSending = false;
+		std::lock_guard<std::mutex> lock(_sendLock);
+		if (_sendQueue.empty())
+		{
+			_isSending = false;
+			return;
+		}
 	}
-	else
-	{
-		RegisterSend();
-	}
+	
+	RegisterSend();
 }
 

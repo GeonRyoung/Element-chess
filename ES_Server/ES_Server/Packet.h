@@ -74,7 +74,15 @@ struct PKT_S2C_EnterGameRes
 {
 	PacketHeader header;
 	bool bSuccess;
+	
+	int32_t gold;
+	int32_t level;
+	int32_t currentWave;
 };
+
+/*=================
+	리롤
+=================*/
 
 struct PKT_C2S_RefreshShopReq
 {
@@ -88,9 +96,5 @@ struct PKT_S2C_RefreshShopRes
 	int32_t remainGold;   
 	int32_t shopUnits[5];   
 };
-
-/*=================
-	리롤
-=================*/
 
 #pragma pack(pop)

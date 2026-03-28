@@ -40,7 +40,7 @@ struct FPKT_S2C_LoginRes
 {
 	FPacketHeader Header;
 	bool bSuccess;
-	int32 AccountId;
+	uint32 AccountId;
 	bool bHasProfile;
 	char Nickname[32];
 };
@@ -67,21 +67,17 @@ struct FPKT_S2C_CreateNicknameRes
 
 struct FPKT_C2S_EnterGameReq
 {
-	FPacketHeader header;
+	FPacketHeader Header;
 };
 
 struct FPKT_S2C_EnterGameRes
 {
-	FPacketHeader header;
+	FPacketHeader Header;
 	bool bSuccess;
 
-	int32_t gold;
-	int32_t level;
-	int32_t currentWave;
-	int32_t playerHp;
-
-	int32_t maxBattleSlots;
-	int32_t maxBenchSlots;
+	uint32 gold;
+	uint32 level;
+	uint32 currentWave;
 };
 
 /*=================
@@ -90,16 +86,16 @@ struct FPKT_S2C_EnterGameRes
 
 struct FPKT_C2S_RefreshShopReq
 {
-	FPacketHeader header;
+	FPacketHeader Header;
 };
 
 // [서버 -> 클라] 상점 갱신 결과 전달
 struct FPKT_S2C_RefreshShopRes
 {
-	FPacketHeader header;
+	FPacketHeader Header;
 	bool bSuccess;
-	int32_t remainGold;
-	int32_t shopUnits[5];
+	uint32 remainGold;
+	uint32 shopUnits[5];
 };
 
 #pragma pack(pop)

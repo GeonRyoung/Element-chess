@@ -29,5 +29,6 @@
 
 
 #include <iostream>
+#include <functional>
 #include "Macro.h"
 using namespace std;

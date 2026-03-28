@@ -141,7 +141,7 @@ bool UEC_NetworkSubsystem::SendCreateNicknameRequest(const FString& Nickname)
 	return bSuccessful;
 }
 
-bool UEC_NetworkSubsystem::EnterGameRequest()
+bool UEC_NetworkSubsystem::SendEnterGameRequest()
 {
 	if (!ClientSocket || ClientSocket->GetConnectionState() != SCS_Connected)
 	{
@@ -149,9 +149,9 @@ bool UEC_NetworkSubsystem::EnterGameRequest()
 		return false;
 	}
 
-	FPKT_C2S_CreateNicknameReq Packet;
-	Packet.Header.Size = sizeof(FPKT_C2S_CreateNicknameReq);
-	Packet.Header.ID = (uint16)EPacketID::CreateNicknameReq;
+	FPKT_C2S_EnterGameReq Packet;
+	Packet.Header.Size = sizeof(FPKT_C2S_EnterGameReq);
+	Packet.Header.ID = (uint16)EPacketID::EnterGameReq;
 	int32 ByteSent = 0;
 	bool bSuccessful = ClientSocket->Send((uint8*)&Packet, Packet.Header.Size, ByteSent);
 
@@ -166,11 +166,11 @@ bool UEC_NetworkSubsystem::EnterGameRequest()
 bool UEC_NetworkSubsystem::SendRefreshShopRequest()
 {
 	FPKT_C2S_RefreshShopReq Packet;
-	Packet.header.Size = sizeof(FPKT_C2S_RefreshShopReq);
-	Packet.header.ID = (uint16_t)EPacketID::RefreshShopReq;
+	Packet.Header.Size = sizeof(FPKT_C2S_RefreshShopReq);
+	Packet.Header.ID = (uint16_t)EPacketID::RefreshShopReq;
 	int32 BytesSent = 0;
 
-	bool bSuccessful = ClientSocket->Send((uint8*)&Packet, Packet.header.Size, BytesSent);
+	bool bSuccessful = ClientSocket->Send((uint8*)&Packet, Packet.Header.Size, BytesSent);
 
 	if (bSuccessful)
 	{
@@ -199,31 +199,46 @@ void UEC_NetworkSubsystem::ReceivePacket()
 			switch (Header->ID)
 			{
 			case (uint16)EPacketID::LoginRes:
-			{
-				FPKT_S2C_LoginRes* ResPacket = (FPKT_S2C_LoginRes*)ReceiveBuffer.GetData();
-				FString ReceivedNickname = UTF8_TO_TCHAR(ResPacket->Nickname);
+				{
+					FPKT_S2C_LoginRes* ResPacket = (FPKT_S2C_LoginRes*)ReceiveBuffer.GetData();
+					FString ReceivedNickname = UTF8_TO_TCHAR(ResPacket->Nickname);
 
-				OnLoginResponseEvent.Broadcast(ResPacket->bSuccess, ResPacket->bHasProfile, ReceivedNickname);
+					OnLoginResponseEvent.Broadcast(ResPacket->bSuccess, ResPacket->bHasProfile, ReceivedNickname);
 
-				UE_LOG(LogTemp, Warning, TEXT("[Network] 로그인 응답! 성공: %s, 프로필: %s, 닉네임: %s"),
-					ResPacket->bSuccess ? TEXT("True") : TEXT("False"),
-					ResPacket->bHasProfile ? TEXT("True") : TEXT("False"),
-					*ReceivedNickname);
-				break;
-			}
+					UE_LOG(LogTemp, Warning, TEXT("[Network] 로그인 응답! 성공: %s, 프로필: %s, 닉네임: %s"),
+					       ResPacket->bSuccess ? TEXT("True") : TEXT("False"),
+					       ResPacket->bHasProfile ? TEXT("True") : TEXT("False"),
+					       *ReceivedNickname);
+					break;
+				}
 			case (uint16)EPacketID::CreateNicknameRes:
-			{
-				FPKT_S2C_CreateNicknameRes* ResPacket = (FPKT_S2C_CreateNicknameRes*)ReceiveBuffer.GetData();
+				{
+					FPKT_S2C_CreateNicknameRes* ResPacket = (FPKT_S2C_CreateNicknameRes*)ReceiveBuffer.GetData();
 
-				OnCreateNicknameResponseEvent.Broadcast(ResPacket->bSuccess);
-				break;
-			}
+					OnCreateNicknameResponseEvent.Broadcast(ResPacket->bSuccess);
+					break;
+				}
 			case (uint16)EPacketID::EnterGameRes:
-			{
-				FPKT_S2C_EnterGameRes * ResPacket = (FPKT_S2C_EnterGameRes*)ReceiveBuffer.GetData();
-				//[TODO]
-				break;
-			}
+				{
+					FPKT_S2C_EnterGameRes* ResPacket = (FPKT_S2C_EnterGameRes*)ReceiveBuffer.GetData();
+					//[TODO]
+					break;
+				}
+			case (uint16)EPacketID::RefreshShopRes:
+				{
+					FPKT_S2C_RefreshShopRes* ResPacket = (FPKT_S2C_RefreshShopRes*)ReceiveBuffer.GetData();
+				
+					TArray<int32> ShopUnitsArray;
+					for (int32 i = 0; i < 5; ++i)
+					{
+						ShopUnitsArray.Add(ResPacket->shopUnits[i]);
+					}
+
+					OnRefreshShopResponseEvent.Broadcast(ResPacket->bSuccess, ResPacket->remainGold, ShopUnitsArray);
+
+					UE_LOG(LogTemp, Warning, TEXT("[Network] 상점 갱신 응답! 남은 골드: %d"), ResPacket->remainGold);
+					break;
+				}
 			default:
 			{
 				UE_LOG(LogTemp, Warning, TEXT("[Network] 알 수 없는 패킷 수신 (ID: %d)"), Header->ID);
@@ -233,3 +248,5 @@ void UEC_NetworkSubsystem::ReceivePacket()
 		}
 	}
 }
+
+

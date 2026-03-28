@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include "RecvBuffer.h"
 
+class GameSession;
 
 enum class IO_TYPE
 {
@@ -32,7 +33,8 @@ public:
 	RecvBuffer& GetRecvBuffer() { return _recvBuffer; }
 	int32_t GetAccountId() { return _accountId; }
 
-
+	void SetGameSession(GameSession* gameSession) { _gameSession = gameSession; }
+	GameSession* GetGameSession() { return _gameSession; }
 private:
 
 	void RegisterSend();
@@ -44,7 +46,7 @@ private:
 
 	OverlappedEx _recvOverlapped;
 
-	RecvBuffer _recvBuffer{ 1024 };
+	class RecvBuffer _recvBuffer{ 1024 };
 
 	OverlappedEx _sendOverlapped;
 
@@ -56,5 +58,6 @@ private:
 	std::queue<std::vector<char>> _sendQueue;
 	std::atomic<bool> _isSending = false;
 	std::vector<char> _currentSendBuffer;
+	GameSession* _gameSession = nullptr;
 };
 

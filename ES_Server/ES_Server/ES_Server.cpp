@@ -3,6 +3,7 @@
 #include "DataManager.h"
 #include "NetworkManager.h"
 #include <locale>
+#include "ClientPacketHandler.h"
 
 #pragma comment(lib, "ws2_32.lib")
 
@@ -11,6 +12,8 @@
 int main() {
 	SetConsoleOutputCP(CP_UTF8);
 
+	ClientPacketHandler::Init();
+	
 	// 1. DB 연결 및 데이터 초기화 (기존 코드 유지)
 	if (GDBManager->Connect("localhost", 3306, "root", "rjsfud5605!!", "element_auto"))
 	{
