@@ -9,7 +9,7 @@ void DataManager::Init()
 
 	if (!conn)
 	{
-		cerr << " [DataManager] DB Connection is null!" << "\n";
+		GLOG_ERROR(DataManager, "DB Connection is null!");
 		return;
 	}
 
@@ -32,12 +32,12 @@ void DataManager::Init()
 				_unitDatas[data.unitId] = data;
 			}
 			mysql_free_result(result);
-			cout << " [DataManger] " << _unitDatas.size() << " Units Cached." << "\n";
+			GLOG(DataManager, "%zu Units Cached.", _unitDatas.size());
 		}
 	}
 	else
 	{
-		cerr << " [DataMange] Query Error: " << mysql_error(conn) << "\n";
+		GLOG_ERROR(DataManager, "Query Error: %s", mysql_error(conn));
 	}
 }
 

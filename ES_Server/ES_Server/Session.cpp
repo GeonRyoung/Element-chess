@@ -5,24 +5,19 @@
 
 Session::Session(uint64_t sessionId, SOCKET socket) : _sessionId(sessionId), _socket(socket)
 {
-	cout << "[Session] " << _sessionId << "번 클라이언트\n";
+	GLOG(Session, "%llu번 클라이언트", _sessionId);
 }
 
 Session::~Session()
 {
-	if (_gameSession)
-	{
-		delete _gameSession;
-		_gameSession = nullptr;
-	}
-	cout << "[Session] " << _sessionId << "번 세션 및 게임 데이터 소멸" << endl;
+	GLOG(Session, "%llu번 세션 및 게임 데이터 소멸", _sessionId);
 }
 
 void Session::Disconnect()
 {
 	if (_socket != INVALID_SOCKET)
 	{
-		cout << "[Session] " << _sessionId << "번 클라이언트 퇴장!" << endl;
+		GLOG(Session, "%llu번 클라이언트 퇴장!", _sessionId);
 		closesocket(_socket);
 		_socket = INVALID_SOCKET;
 	}
@@ -45,7 +40,7 @@ void Session::Recv()
 		int errCode = WSAGetLastError();
 		if (errCode != WSA_IO_PENDING)
 		{
-			cout << "Recv 예약 실패! ErrorCode: " << errCode << endl;
+			GLOG_ERROR(Session, "Recv 예약 실패! ErrorCode: %d", errCode);
 			Disconnect();
 		}
 	}
@@ -89,7 +84,7 @@ void Session::RegisterSend()
 		int errCode = WSAGetLastError();
 		if (errCode != WSA_IO_PENDING)
 		{
-			cout << "Send 예약 실패! ErrorCode: " << errCode << endl;
+			GLOG_ERROR(Session, "Send 예약 실패! ErrorCode: %d", errCode);
 			_isSending = false; 
 			Disconnect();
 		}
@@ -109,4 +104,3 @@ void Session::OnSendCompleted()
 	
 	RegisterSend();
 }
-

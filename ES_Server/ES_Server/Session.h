@@ -1,7 +1,6 @@
 ﻿#pragma once
 #include "RecvBuffer.h"
-
-class GameSession;
+#include "GameSession.h"
 
 enum class IO_TYPE
 {
@@ -33,8 +32,8 @@ public:
 	RecvBuffer& GetRecvBuffer() { return _recvBuffer; }
 	int32_t GetAccountId() { return _accountId; }
 
-	void SetGameSession(GameSession* gameSession) { _gameSession = gameSession; }
-	GameSession* GetGameSession() { return _gameSession; }
+	void SetGameSession(unique_ptr<GameSession> gameSession) { _gameSession = move(gameSession); }
+	GameSession* GetGameSession() { return _gameSession.get(); }
 private:
 
 	void RegisterSend();
@@ -58,6 +57,6 @@ private:
 	std::queue<std::vector<char>> _sendQueue;
 	std::atomic<bool> _isSending = false;
 	std::vector<char> _currentSendBuffer;
-	GameSession* _gameSession = nullptr;
+	unique_ptr<GameSession> _gameSession = nullptr;
 };
 

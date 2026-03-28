@@ -24,14 +24,14 @@ void ClientPacketHandler::HandlePacket(Session* session, char* packetData, uint1
     }
     else
     {
-        cout << "[ClientPacketHandler] 등록되지 않은 패킷 수신! ID: " << id << "\n";
+        GLOG(ClientPacketHandler, "등록되지 않은 패킷 수신! ID: %d", id);
     }
 }
 
 void ClientPacketHandler::Handle_LoginReq(Session* session, char* packetData)
 {
     PKT_C2S_LoginReq* loginReq = (PKT_C2S_LoginReq*)packetData;
-    cout << "[Session] ID:" << loginReq->username << " / PW: " << loginReq->password << "\n";
+    GLOG(Session, "ID: %s / PW: %s", loginReq->username, loginReq->password);
 
     int32_t accountId = GDBManager->VerifyAccount(loginReq->username, loginReq->password);
     bool bSuccess = (accountId != -1);
@@ -52,26 +52,26 @@ void ClientPacketHandler::Handle_LoginReq(Session* session, char* packetData)
         {
             loginRes.bHasProfile = true;
             strncpy_s(loginRes.nickname, playerProfile->GetNickname().c_str(), 31);
-            cout << " -> 기존 유저 접속! 닉네임: " << loginRes.nickname << "\n";
+            GLOG(Session, "-> 기존 유저 접속! 닉네임: %s", loginRes.nickname);
         }
         else
         {
             loginRes.bHasProfile = false;
             memset(loginRes.nickname, 0, 32);
-            cout << " -> 신규 유저 접속! 닉네임 생성 요청 필요.\n";
+            GLOG(Session, "-> 신규 유저 접속! 닉네임 생성 요청 필요.");
         }
     }
 
     session->Send((char*)&loginRes, loginRes.header.size);
 
-    if (bSuccess) cout << " -> 로그인 성공! 클라이언트에 맵 이동 명령을 하달합니다.\n";
-    else cout << " -> 로그인 실패! 클라이언트에 에러를 보냅니다.\n";
+    if (bSuccess) GLOG(Session, "-> 로그인 성공! 클라이언트에 맵 이동 명령을 하달합니다.");
+    else GLOG(Session, "-> 로그인 실패! 클라이언트에 에러를 보냅니다.");
 }
 
 void ClientPacketHandler::Handle_CreateNicknameReq(Session* session, char* packetData)
 {
     PKT_C2S_CreateNicknameReq* req = (PKT_C2S_CreateNicknameReq*)packetData;
-    cout << "[Session " << session->GetSessionId() << "] 닉네임 생성 요청: " << req->nickname << "\n";
+    GLOG(Session, "Session %llu 닉네임 생성 요청: %s", session->GetSessionId(), req->nickname);
 
     bool bSuccess = false;
 
@@ -83,7 +83,7 @@ void ClientPacketHandler::Handle_CreateNicknameReq(Session* session, char* packe
     }
     else
     {
-        cout << " -> 에러: 로그인되지 않은 유저의 생성 요청입니다!\n";
+        GLOG_ERROR(Session, "로그인되지 않은 유저의 생성 요청입니다!");
     }
 
     PKT_S2C_CreateNicknameRes res;
@@ -92,21 +92,17 @@ void ClientPacketHandler::Handle_CreateNicknameReq(Session* session, char* packe
     res.bSuccess = bSuccess;
 
     session->Send((char*)&res, res.header.size);
-    if (bSuccess) cout << " -> 닉네임 생성 및 DB 저장 성공!\n";
+    if (bSuccess) GLOG(Session, "-> 닉네임 생성 및 DB 저장 성공!");
 }
 
 void ClientPacketHandler::Handle_EnterGameReq(Session* session, char* packetData)
 {
     PKT_C2S_EnterGameReq* req = (PKT_C2S_EnterGameReq*)packetData;
-    cout << "[Session] 게임 시작 요청 " << "\n";
-
-    if (session->GetGameSession() != nullptr)
-    {
-        delete session->GetGameSession();
-    }
+    GLOG(Session, "게임 시작 요청");
     
-    GameSession* newGameSession = new GameSession(session);
-    session->SetGameSession(newGameSession);
+    auto newGameSession = std::make_unique<GameSession>(session);
+    GameSession* gamePtr = newGameSession.get();
+    session->SetGameSession(std::move(newGameSession));
 
     bool bSuccess = true;
 
@@ -115,14 +111,14 @@ void ClientPacketHandler::Handle_EnterGameReq(Session* session, char* packetData
     res.header.id = (uint16_t)EPacketId::EnterGameRes;
     res.bSuccess = bSuccess;
     
-    newGameSession->InitGame();
+    gamePtr->InitGame();
     session->Send((char*)&res, res.header.size);
-    if (bSuccess) cout << "게임 사작 성공!\n";
+    if (bSuccess) GLOG(Session, "게임 시작 성공!");
 }
 
 void ClientPacketHandler::Handle_RefreshShopReq(Session* session, char* packetData)
 {
-    cout << "[Session " << session->GetSessionId() << "] 상점 리롤 요청 수신!\n";
+    GLOG(Session, "Session %llu 상점 리롤 요청 수신!", session->GetSessionId());
 
     GameSession* game = session->GetGameSession();
     
@@ -132,6 +128,6 @@ void ClientPacketHandler::Handle_RefreshShopReq(Session* session, char* packetDa
     }
     else
     {
-        cout << " -> 에러: 게임 방에 입장하지 않은 유저의 리롤 요청입니다!\n";
+        GLOG_ERROR(Session, "게임 방에 입장하지 않은 유저의 리롤 요청입니다!");
     }
 }

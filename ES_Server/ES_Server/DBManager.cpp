@@ -24,7 +24,7 @@ bool DBManager::Connect(const string& host, int port, const string& user, const 
         
         _connectionPool.push(conn);
     }
-    cout << " [DBManager] Successfully connected to database: " << schema << " (Pool Size: " << poolSize << ")" << endl;
+    GLOG(DBManager, "Successfully connected to database: %s (Pool Size: %d)", schema.c_str(), poolSize);
     return true;
 }
 
@@ -37,7 +37,7 @@ void DBManager::Disconnect()
         _connectionPool.pop();
         if (conn) mysql_close(conn);
     }
-    cout << " [DBManager] Disconnected from database." << endl;
+    GLOG(DBManager, "Disconnected from database.");
 }
 
 
@@ -100,7 +100,7 @@ int32_t DBManager::VerifyAccount(const string& username, const string& passwordH
     }
     else
     {
-        cerr << " [DBManager] VerifyAccount Query Error: " << mysql_error(conn) << endl;
+        GLOG_ERROR(DBManager, "VerifyAccount Query Error: %s", mysql_error(conn));
     }
     return -1;
 }
@@ -147,7 +147,7 @@ bool DBManager::CreatePlayerProfile(int32_t accountId, const string& nickname)
     }
     else
     {
-        cerr << " [DBManager] CreateProfile Query Error: " << mysql_error(conn) << endl;
+        GLOG_ERROR(DBManager, "CreateProfile Query Error: %s", mysql_error(conn));
         return false;
     }
 }

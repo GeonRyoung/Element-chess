@@ -60,7 +60,7 @@ int main()
 	WSADATA wsaData;
 	WSAStartup(MAKEWORD(2, 2), &wsaData);
 
-	cout << "[더미 클라이언트] 500명 동시 접속 테스트를 시작합니다...\n";
+	printf("[DummyClient] 500명 동시 접속 테스트를 시작합니다...\n");
 
 	vector<thread> threads;
 
@@ -77,7 +77,7 @@ int main()
 			t.join();
 	}
 
-	cout << "[더미 클라이언트] 폭격 종료! 서버가 살아있는지 확인하세요.\n";
+	printf("[DummyClient] 폭격 종료! 서버가 살아있는지 확인하세요.\n");
 
 	WSACleanup();
 	return 0;

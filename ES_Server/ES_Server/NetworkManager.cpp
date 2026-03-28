@@ -19,7 +19,7 @@ bool NetworkManager::StartServer(uint16_t port)
 	WSADATA wsaData;
 	if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
 	{
-		cout << "[NetworkManager] WSAStartup 실패\n";
+		GLOG_ERROR(NetworkManager, "WSAStartup 실패");
 		return false;
 	}
 
@@ -27,7 +27,7 @@ bool NetworkManager::StartServer(uint16_t port)
 	_iocpHandle = CreateIoCompletionPort(INVALID_HANDLE_VALUE, NULL, 0, 0);
 	if (_iocpHandle == NULL)
 	{
-		cout << "[NetworkManager] IOCP 수신함 생성 실패\n";
+		GLOG_ERROR(NetworkManager, "IOCP 수신함 생성 실패");
 		return false;
 	}
 
@@ -43,7 +43,7 @@ bool NetworkManager::StartServer(uint16_t port)
 	if (::bind(_listenSocket, (SOCKADDR*)&serverAddr, sizeof(serverAddr)) == SOCKET_ERROR) return false;
 	if (::listen(_listenSocket, SOMAXCONN) == SOCKET_ERROR) return false;
 
-	cout << "[NetworkManager] 서버 오픈 완료! 포트: " << port << " / 클라이언트 대기 중\n";
+	GLOG(NetworkManager, "서버 오픈 완료! 포트: %d / 클라이언트 대기 중", port);
 
 	uint32_t coreCount = std::thread::hardware_concurrency();
 	for (uint32_t i = 0; i < coreCount; ++i)
@@ -101,8 +101,7 @@ void NetworkManager::WorkerThreadMain(HANDLE iocpHandle)
 
 		if (overlappedEx->type == IO_TYPE::READ)
 		{
-			cout << "[Session " << session->GetSessionId() << "] "
-				<< bytesTransferred << " 바이트의 데이터를 수신했습니다!\n";
+			GLOG(Session, "Session %llu %lu 바이트의 데이터를 수신했습니다!", session->GetSessionId(), bytesTransferred);
 
 			if (session->GetRecvBuffer().OnWrite(bytesTransferred) == false)
 			{
@@ -129,9 +128,8 @@ void NetworkManager::WorkerThreadMain(HANDLE iocpHandle)
 		}
 		else if (overlappedEx->type == IO_TYPE::WRITE)
 		{
-			cout << "[Session " << session->GetSessionId() << "] 데이터 송신 완료!\n";
+			GLOG(Session, "Session %llu 데이터 송신 완료!", session->GetSessionId());
 			session->OnSendCompleted();
 		}
 	}
 }
-

@@ -21,13 +21,13 @@ int main() {
 	}
 	else
 	{
-		cerr << "[Error] DB 연결 실패로 서버를 종료합니다." << endl;
+		GLOG_ERROR(System, "DB 연결 실패로 서버를 종료합니다.");
 		return 1;
 	}
 
-	cout << "=========================================" << endl;
-	cout << "       Element Defense Server Start      " << endl;
-	cout << "=========================================" << endl;
+	GLOG(System, "=========================================");
+	GLOG(System, "       Element Defense Server Start      ");
+	GLOG(System, "=========================================");
 
 	// 2. 네트워크 매니저 생성 및 서버 가동!
 	// (기존의 길고 복잡했던 네트워크 초기화와 무한 루프가 단 두 줄로 압축됩니다)
@@ -37,11 +37,11 @@ int main() {
 	// 서버가 켜져 있는 동안 메인 스레드는 여기서 계속 머물게 됩니다.
 	if (!netManager.StartServer(SERVER_PORT))
 	{
-		cerr << "[Error] 네트워크 서버 시작 실패!" << endl;
+		GLOG_ERROR(System, "네트워크 서버 시작 실패!");
 		return 1;
 	}
 
 	// 정상적인 무한 루프가 돌아간다면 이 코드는 실행되지 않습니다.
-	cout << "[System] 서버가 종료되었습니다." << endl;
+	GLOG(System, "서버가 종료되었습니다.");
 	return 0;
 }
