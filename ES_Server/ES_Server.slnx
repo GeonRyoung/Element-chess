@@ -1,8 +1,0 @@
-<Solution>
-  <Configurations>
-    <Platform Name="x64" />
-    <Platform Name="x86" />
-  </Configurations>
-  <Project Path="DummyClient/DummyClient.vcxproj" Id="6a6d76d5-b6db-4fd7-8524-0c0b22067c26" />
-  <Project Path="ES_Server/ES_Server.vcxproj" Id="527f66d6-caa7-48c5-8832-8bf2bf534383" />
-</Solution>
