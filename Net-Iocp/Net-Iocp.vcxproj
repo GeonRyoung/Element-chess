@@ -156,6 +156,9 @@
   <ItemGroup>
     <ClCompile Include="Net_Iocp.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Core\LockFreeObjectPool.h" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
