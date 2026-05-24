@@ -59,7 +59,7 @@ public:
                 return std::shared_ptr<T>(&head.ptr->data, [this, node = head.ptr](T* ptr)
                 {
                     this->Free(node);
-                })
+                });
             }
         }
         
@@ -76,7 +76,7 @@ public:
         assert(node != nullptr);
         
         TaggedPointer<Node> head = m_pFreeList.load(std::memory_order_relaxed);
-        TaggedPointer<Node> nextHead;
+        TaggedPointer<Node> newHead;
         newHead.ptr = node;
 
         do
@@ -84,7 +84,7 @@ public:
             newHead.tag = head.tag + 1;
             node->next = head;
         }
-        while (!m_pFreeList.compare_exchange_weak(head, nextHead,
+        while (!m_pFreeList.compare_exchange_weak(head, newHead,
             std::memory_order_release,
             std::memory_order_relaxed));
         
