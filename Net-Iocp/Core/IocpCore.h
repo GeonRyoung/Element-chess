@@ -42,7 +42,7 @@ public:
     
     void Shutdown();
     
-    void SetSessionMnager(std::shared_ptr<SessionManager> manager)
+    void SetSessionManager(std::shared_ptr<SessionManager> manager)
     {
         m_sessionManager = manager;
     }

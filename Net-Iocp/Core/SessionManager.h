@@ -9,13 +9,13 @@
 
 #include "IocpCore.h"
 
-class SessionManger
+class SessionManager
 {
 private:
-    SessionManger() = default;
-    ~SessionManger() = default;
-    SessionManger(const SessionManager&) = delete;
-    SessionManger& operator=(const SessionManager&) = delete;
+    SessionManager() = default;
+    ~SessionManager() = default;
+    SessionManager(const SessionManager&) = delete;
+    SessionManager& operator=(const SessionManager&) = delete;
     
     LockFreeObjectPool<RudpSession> m_sessionPool;
     
@@ -25,9 +25,9 @@ private:
     std::atomic<uint64_t> m_sessionIdGenerator{1 };
     
 public:
-    static SessionManger& GetInstance()
+    static SessionManager& GetInstance()
     {
-        static SessionManger instance;
+        static SessionManager instance;
         return instance;
     }
     
@@ -38,7 +38,7 @@ public:
             return nullptr;
         
         uint64_t newId = m_sessionIdGenerator.fetch_add(1, std::memory_order_acquire); 
-        session->SetSessionId(newId);
+        session->Init(socket, newId);
         
         {
             std::unique_lock<std::shared_mutex> lock(m_sessionMapLock);
@@ -57,12 +57,9 @@ public:
     std::shared_ptr<RudpSession> FindSession(uint64_t sessionId) const
     {
         std::shared_lock<std::shared_mutex> lock(m_sessionMapLock);
-        
         auto it = m_activeSessions.find(sessionId);
         if (it == m_activeSessions.end())
-        {
-            return it->second;
-        }
-        return nullptr;
+            return nullptr;
+        return it->second;
     }
 };

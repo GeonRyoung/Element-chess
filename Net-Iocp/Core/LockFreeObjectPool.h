@@ -10,7 +10,7 @@ struct alignas(16) TaggedPointer
 {
     T* ptr;
     uint64_t tag;
-}
+};
 
 template <typename T>
 class LockFreeObjectPool
@@ -28,7 +28,7 @@ private:
 public:
     LockFreeObjectPool() : m_availableCount(0)
     {
-        m_pFreeList.store(nullptr);
+        m_pFreeList.store(TaggedPointer<Node>{nullptr, 0});
     }
     
     ~LockFreeObjectPool()
@@ -49,11 +49,13 @@ public:
         while (head.ptr != nullptr)
         {
             TaggedPointer<Node> nextHead = head.ptr->next;
+            nextHead.tag = head.tag + 1;
+            
             if (m_pFreeList.compare_exchange_weak(head, nextHead,
                 std::memory_order_release,
                 std::memory_order_relaxed))
             {
-                m_availableCount.fetch_add(1, std::memory_order_relaxed);
+                m_availableCount.fetch_sub(1, std::memory_order_relaxed);
                 
                 // shared_ptr의 커스텀 삭제자를 지정하여, delete 대신 Free로 반환되게 함
                 return std::shared_ptr<T>(&head.ptr->data, [this, node = head.ptr](T* ptr)
@@ -95,4 +97,4 @@ public:
     {
         return m_availableCount.load(std::memory_order_relaxed);
     }
-}
+};

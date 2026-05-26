@@ -13,10 +13,8 @@ private:
     size_t m_writePos;
     
 public:
-    explicit CircularBuffer(size_t capacity) : m_capacity(capacity), m_readPos(0), m_writePos(0)
-    {
-        m_buffer.resize(capacity);
-    }
+    explicit CircularBuffer(size_t capacity)
+    : m_buffer(capacity), m_capacity(capacity), m_readPos(0), m_writePos(0) {}
     
     size_t GetUseSize() const
     {
@@ -43,7 +41,7 @@ public:
             std::memcpy(&m_buffer[0], data + rightSpace, size - rightSpace);
         }
         
-        m_writePos += (m_writePos + size) % m_capacity;
+        m_writePos = (m_writePos + size) % m_capacity;
         return true;
     }
     
@@ -59,23 +57,23 @@ public:
         {
             {
                 std::memcpy(dest, &m_buffer[m_readPos], rightSpace);
-                std::memcpy(dest, &m_buffer[0], size - rightSpace);
+                std::memcpy(dest + rightSpace, &m_buffer[0], size - rightSpace);
             }
         }
         
-        bool Consume(size_t size)
-        {
-            if (GetUseSize() < size)
-                return false;
+    }
+    bool Consume(size_t size)
+    {
+        if (GetUseSize() < size)
+            return false;
             
-            m_readPos = (m_readPos + size) % m_capacity;
-            return true;
-        }
+        m_readPos = (m_readPos + size) % m_capacity;
+        return true;
+    }
         
-        void Clear()
-        {
-            m_readPos = 0;
-            m_writePos = 0;
-        }
+    void Clear()
+    {
+        m_readPos = 0;
+        m_writePos = 0;
     }
 };

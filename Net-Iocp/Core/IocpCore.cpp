@@ -60,7 +60,7 @@ bool IocpCore::RegisterSocket(SOCKET socket, ULONG_PTR completionKey)
 
 void IocpCore::Shutdown()
 {
-    if (!m_bIsRunning.load(std::memory_order_acq_rel))
+    if (!m_bIsRunning.load(std::memory_order_acquire))
         return;
     
     for (size_t i = 0; i < m_workerThreads.size(); i++)
