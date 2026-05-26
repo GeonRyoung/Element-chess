@@ -159,6 +159,7 @@
     <ClCompile Include="Net_Iocp.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Core\CircularBuffer.h" />
     <ClInclude Include="Core\IocpCore.h" />
     <ClInclude Include="Core\LockFreeObjectPool.h" />
     <ClInclude Include="Core\RdupSession.h" />
