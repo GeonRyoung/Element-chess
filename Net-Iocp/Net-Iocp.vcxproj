@@ -155,11 +155,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Core\IocpCore.cpp" />
+    <ClCompile Include="Core\RdupSession.cpp" />
     <ClCompile Include="Net_Iocp.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Core\IocpCore.h" />
     <ClInclude Include="Core\LockFreeObjectPool.h" />
+    <ClInclude Include="Core\RdupSession.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
