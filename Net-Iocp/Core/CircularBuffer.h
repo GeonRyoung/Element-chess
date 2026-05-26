@@ -60,7 +60,7 @@ public:
                 std::memcpy(dest + rightSpace, &m_buffer[0], size - rightSpace);
             }
         }
-        
+        return true;   
     }
     bool Consume(size_t size)
     {
