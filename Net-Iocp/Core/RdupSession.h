@@ -4,6 +4,8 @@
 #include <WinSock2.h>
 #include <atomic>
 #include <memory>
+#include <array>
+#include "CircularBuffer.h"
 
 enum class SessionState : uint8_t
 {
@@ -24,6 +26,10 @@ private:
     
     WSAOVERLAPPED m_recvOverlapped;
     WSAOVERLAPPED m_sendOverlapped;
+    
+    CircularBuffer m_recvBuffer;
+    std::array<char, 2048> m_recvTempBuffer;
+    std::atomic<bool> m_isRecvPending;
 public:
     RudpSession();
     virtual ~RudpSession();
@@ -37,4 +43,14 @@ public:
     
     void PostRecv();
     void PostSend();
+    
+    void OnRecvCompleted(size_t bytesTransferred);     
+    
+    /*=======================
+            Getter
+    =======================*/
+    uint64_t GetSessionId() const { return m_sessionId; }
+    WSAOVERLAPPED* GetRecvOverlappedPtr() { return &m_recvOverlapped; } 
+    WSAOVERLAPPED* GetSendOverlappedPtr() { return &m_sendOverlapped; } 
+    
 };
