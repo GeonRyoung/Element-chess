@@ -162,6 +162,7 @@
     <ClInclude Include="Core\CircularBuffer.h" />
     <ClInclude Include="Core\IocpCore.h" />
     <ClInclude Include="Core\LockFreeObjectPool.h" />
+    <ClInclude Include="Core\Packet.h" />
     <ClInclude Include="Core\RdupSession.h" />
     <ClInclude Include="Core\SessionManager.h" />
   </ItemGroup>
