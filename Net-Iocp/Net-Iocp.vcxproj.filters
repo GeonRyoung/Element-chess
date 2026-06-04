@@ -30,9 +30,18 @@
     <ClCompile Include="Core\PacketDispatcher.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Core\Sector.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\World.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Core\CircularBuffer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Entity.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Core\IocpCore.h">
@@ -47,7 +56,13 @@
     <ClInclude Include="Core\RdupSession.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Core\Sector.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="Core\SessionManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\World.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Core\GameLogic.h">

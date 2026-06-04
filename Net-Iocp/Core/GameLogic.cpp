@@ -1,4 +1,5 @@
 #include "GameLogic.h"
+#include "World.h"
 #include <vector>
 
 GameLogic::GameLogic() : m_pJobQueue(std::make_unique<JobQueue>())
@@ -29,8 +30,7 @@ void GameLogic::Update(float deltaTime)
         }
     }
 
-    // TODO: 월드 시뮬레이션 틱 갱신 (3단계 World 구현 후 연동)
-    // if (m_pWorld) {
-    //     m_pWorld->UpdateWorldTick(deltaTime);
-    // }
+    if (m_pWorld) {
+        m_pWorld->UpdateWorldTick(deltaTime);
+    }
 }
