@@ -1,5 +1,6 @@
 #include "PacketDispatcher.h"
 #include "RdupSession.h"
+#include "IExecutionService.h"
 
 void PacketDispatcher::RegisterHandler(uint16_t opcode, HandlerFunc handler)
 {
@@ -15,6 +16,16 @@ void PacketDispatcher::Dispatch(std::shared_ptr<RudpSession> session, PacketPtr 
     auto it = m_handlerMap.find(opcode);
     if (it != m_handlerMap.end())
     {
-        it->second(session, packet);
+        auto handler = it->second;
+        if (m_pExecutionService)
+        {
+            m_pExecutionService->Execute([handler, session, packet]() {
+                handler(session, packet);
+            });
+        }
+        else
+        {
+            handler(session, packet);
+        }
     }
 }

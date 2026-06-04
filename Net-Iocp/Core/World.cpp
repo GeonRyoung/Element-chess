@@ -75,6 +75,22 @@ void World::RemoveEntity(uint32_t entityId)
     }
 }
 
+void World::MoveEntity(std::shared_ptr<Entity> entity, Vector2 newPos)
+{
+    if (!entity) return;
+
+    std::shared_ptr<Sector> oldSector = entity->GetCurrentSector();
+    entity->SetPosition(newPos);
+    std::shared_ptr<Sector> newSector = GetSector(newPos.x, newPos.y);
+
+    if (oldSector != newSector)
+    {
+        if (oldSector) oldSector->RemoveEntity(entity);
+        if (newSector) newSector->AddEntity(entity);
+        entity->SetCurrentSector(newSector);
+    }
+}
+
 void World::UpdateWorldTick(float deltaTime)
 {
     std::vector<std::shared_ptr<Entity>> currentEntities;

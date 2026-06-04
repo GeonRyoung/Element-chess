@@ -24,5 +24,6 @@ public:
     std::shared_ptr<Sector> GetSector(float x, float y);
     void AddEntity(std::shared_ptr<Entity> entity);
     void RemoveEntity(uint32_t entityId);
+    void MoveEntity(std::shared_ptr<Entity> entity, Vector2 newPos);
     void UpdateWorldTick(float deltaTime);
 };
