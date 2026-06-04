@@ -33,9 +33,11 @@ public:
 
     std::string SerializeMetrics() const
     {
-        return "{\n"
-               "  \"packet_count\": " + std::to_string(m_uPacketCounter.load(std::memory_order_relaxed)) + ",\n"
-               "  \"latency_ms\": " + std::to_string(m_fLatencyGauge.load(std::memory_order_relaxed)) + "\n"
-               "}\n";
+        return "# HELP netiocp_packet_count Total number of packets processed\n"
+               "# TYPE netiocp_packet_count counter\n"
+               "netiocp_packet_count " + std::to_string(m_uPacketCounter.load(std::memory_order_relaxed)) + "\n"
+               "# HELP netiocp_latency_ms Current server latency in milliseconds\n"
+               "# TYPE netiocp_latency_ms gauge\n"
+               "netiocp_latency_ms " + std::to_string(m_fLatencyGauge.load(std::memory_order_relaxed)) + "\n";
     }
 };

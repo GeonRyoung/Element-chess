@@ -1,0 +1,24 @@
+{
+  "title": "Net-Iocp Server Metrics",
+  "panels": [
+    {
+      "type": "timeseries",
+      "title": "Packet Count (Cumulative)",
+      "gridPos": { "h": 9, "w": 12, "x": 0, "y": 0 },
+      "targets": [
+        { "expr": "netiocp_packet_count", "legendFormat": "Packets Processed" }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Latency (ms)",
+      "gridPos": { "h": 9, "w": 12, "x": 12, "y": 0 },
+      "targets": [
+        { "expr": "netiocp_latency_ms", "legendFormat": "Latency" }
+      ]
+    }
+  ],
+  "schemaVersion": 38,
+  "timezone": "browser",
+  "refresh": "5s"
+}

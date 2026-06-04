@@ -11,6 +11,7 @@
 #include "Core/BotManager.h"
 #include "Core/TimerWheel.h"
 #include "Core/MetricManager.h"
+#include "Core/httplib.h"
 
 #pragma comment(lib, "Ws2_32.lib")
 
@@ -84,9 +85,22 @@ int main(int argc, char* argv[])
     BotManager botManager;
     botManager.SpawnBots(100, world); // 100마리 더미 스폰
 
+    // 6. HTTP 모니터링 서버(cpp-httplib) 구동 (백그라운드 스레드)
+    std::thread httpThread([]() {
+        httplib::Server svr;
+        svr.Get("/metrics", [](const httplib::Request& /*req*/, httplib::Response& res) {
+            std::string metricsData = MetricManager::GetInstance().SerializeMetrics();
+            res.set_content(metricsData, "text/plain");
+        });
+        
+        std::cout << "Monitoring HTTP server listening on port 8080 (http://localhost:8080/metrics)" << std::endl;
+        svr.listen("0.0.0.0", 8080);
+    });
+    httpThread.detach();
+
     std::cout << "Server initialization complete. Listening on UDP 9000. Entering main loop." << std::endl;
 
-    // 6. 메인 게임 루프 (Tick 통합)
+    // 7. 메인 게임 루프 (Tick 통합)
     // 60FPS (약 16.6ms) 간격으로 Update 실행
     const auto TICK_INTERVAL = std::chrono::milliseconds(16);
     
