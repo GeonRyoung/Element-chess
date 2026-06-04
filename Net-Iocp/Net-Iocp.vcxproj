@@ -157,10 +157,11 @@
     <ClCompile Include="Core\Bot.cpp" />
     <ClCompile Include="Core\BotManager.cpp" />
     <ClCompile Include="Core\GameLogic.cpp" />
+    <ClCompile Include="Core\TimerWheel.cpp" />
     <ClCompile Include="Core\IocpCore.cpp" />
     <ClCompile Include="Core\PacketDispatcher.cpp" />
     <ClCompile Include="Core\Player.cpp" />
-    <ClCompile Include="Core\RdupSession.cpp" />
+    <ClCompile Include="Core\RudpSession.cpp" />
     <ClCompile Include="Core\Sector.cpp" />
     <ClCompile Include="Core\World.cpp" />
     <ClCompile Include="Net_Iocp.cpp" />
@@ -172,6 +173,8 @@
     <ClInclude Include="Core\CircularBuffer.h" />
     <ClInclude Include="Core\Entity.h" />
     <ClInclude Include="Core\GameLogic.h" />
+    <ClInclude Include="Core\TimerWheel.h" />
+    <ClInclude Include="Core\MetricManager.h" />
     <ClInclude Include="Core\IExecutionService.h" />
     <ClInclude Include="Core\IocpCore.h" />
     <ClInclude Include="Core\JobQueue.h" />
@@ -179,7 +182,7 @@
     <ClInclude Include="Core\Packet.h" />
     <ClInclude Include="Core\PacketDispatcher.h" />
     <ClInclude Include="Core\Player.h" />
-    <ClInclude Include="Core\RdupSession.h" />
+    <ClInclude Include="Core\RudpSession.h" />
     <ClInclude Include="Core\Sector.h" />
     <ClInclude Include="Core\SessionManager.h" />
     <ClInclude Include="Core\World.h" />

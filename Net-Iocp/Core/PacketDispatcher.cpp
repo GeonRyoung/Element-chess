@@ -1,5 +1,5 @@
 #include "PacketDispatcher.h"
-#include "RdupSession.h"
+#include "RudpSession.h"
 #include "IExecutionService.h"
 
 void PacketDispatcher::RegisterHandler(uint16_t opcode, HandlerFunc handler)
