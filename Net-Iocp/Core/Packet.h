@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include <cstdint>
 #include <cstring>
@@ -209,3 +209,6 @@ public:
         return static_cast<PacketOpcode>(GetHeader()->opcode);
     }
 };
+
+using PacketPtr = std::shared_ptr<Packet>;
+

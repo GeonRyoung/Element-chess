@@ -1,4 +1,4 @@
-﻿#include "IocpCore.h"
+#include "IocpCore.h"
 #include <iostream>
 
 #include "SessionManager.h"
@@ -50,12 +50,9 @@ void IocpCore::WorkerThreadMain()
         }
         else if (pOverlapped == session->GetSendOverlappedPtr())               
         {
-            // TODO: 송신 완료 후 후속 처리(재전송 큐 제거/통계 반영 등)
-            if (bytesTransferred == 0)
-            {
-                session->DisConnect();
-                m_sessionManager->RemoveSession(session->GetSessionId());
-            }
+            session->OnSendCompleted(static_cast<size_t>(bytesTransferred));  
+            if (session->GetState() == SessionState::Closed)                  
+                m_sessionManager->RemoveSession(session->GetSessionId());       
         }
         else
         {
