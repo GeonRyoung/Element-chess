@@ -154,17 +154,28 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Core\GameLogic.cpp" />
     <ClCompile Include="Core\IocpCore.cpp" />
+    <ClCompile Include="Core\PacketDispatcher.cpp" />
     <ClCompile Include="Core\RdupSession.cpp" />
+    <ClCompile Include="Core\Sector.cpp" />
+    <ClCompile Include="Core\World.cpp" />
     <ClCompile Include="Net_Iocp.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Core\CircularBuffer.h" />
+    <ClInclude Include="Core\Entity.h" />
+    <ClInclude Include="Core\GameLogic.h" />
+    <ClInclude Include="Core\IExecutionService.h" />
     <ClInclude Include="Core\IocpCore.h" />
+    <ClInclude Include="Core\JobQueue.h" />
     <ClInclude Include="Core\LockFreeObjectPool.h" />
     <ClInclude Include="Core\Packet.h" />
+    <ClInclude Include="Core\PacketDispatcher.h" />
     <ClInclude Include="Core\RdupSession.h" />
+    <ClInclude Include="Core\Sector.h" />
     <ClInclude Include="Core\SessionManager.h" />
+    <ClInclude Include="Core\World.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
