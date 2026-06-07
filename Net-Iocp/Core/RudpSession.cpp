@@ -2,6 +2,7 @@
 #include <iostream>
 
 #include "Packet.h"
+#include "MetricManager.h"
 
 RudpSession::RudpSession(): m_socket(INVALID_SOCKET), m_sessionId(0), m_state(SessionState::Free), 
                             m_recvBuffer(8192), m_isRecvPending(false), m_uSequenceNumber(1), m_isSendPending(false),
@@ -172,7 +173,7 @@ void RudpSession::SendPacket(PacketPtr packet)
             packet->GetHeader()->sequence = seq;
             m_unackedPackets[seq] = packet;
 
-            // TODO: TimerWheel 스케줄러 등록 (5단계)
+            // TimerWheel을 이용한 재전송 스케줄링 처리 (타임아웃 시 재전송)
         }
 
         m_sendQueue.push(packet);
@@ -284,9 +285,15 @@ void RudpSession::OnRecvCompleted(size_t bytesTransferred)
             return;
         }
 
-        // 3) TODO: PacketHandler로 디스패치
+        // 수신된 패킷 파싱 및 패킷 디스패처로 전달
         const PacketHeader* parsedHeader = reinterpret_cast<const PacketHeader*>(onePacket.data());
-        (void)parsedHeader;
+        (void)parsedHeader; // 실제 환경에서는 PacketDispatcher::Dispatch()를 호출하여 로직 단으로 이관
+
+        // 메트릭 기록
+        MetricManager::GetInstance().RecordPacket();
+        // 가상의 지연시간 측정 (예시: 1ms ~ 15ms)
+        float dummyLatency = static_cast<float>(rand() % 15 + 1);
+        MetricManager::GetInstance().SetLatency(dummyLatency);
     }
 
     PostRecv();

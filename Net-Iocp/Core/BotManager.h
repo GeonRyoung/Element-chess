@@ -1,5 +1,6 @@
 #pragma once
 #include <unordered_map>
+class World;
 #include <mutex>
 #include <memory>
 #include <cstdint>
@@ -18,4 +19,8 @@ public:
     std::shared_ptr<Bot> CreateBot(uint32_t entityId, Vector2 spawnPos);
     void RemoveBot(uint32_t entityId);
     void UpdateBots(float deltaTime);
+    
+    void SpawnBots(int count, std::shared_ptr<World> world);
+    void RemoveAllBots();
+    size_t GetBotCount() const;
 };

@@ -3,6 +3,7 @@
 
 #include "SessionManager.h"
 #include "RudpSession.h"
+#include "MetricManager.h"
 
 void IocpCore::WorkerThreadMain()
 {
@@ -43,6 +44,9 @@ void IocpCore::WorkerThreadMain()
 
         if (pOverlapped == session->GetRecvOverlappedPtr())                   
         {
+            // 패킷 메트릭 증가
+            MetricManager::GetInstance().RecordPacket();
+            
             session->OnRecvCompleted(static_cast<size_t>(bytesTransferred));  
 
             if (session->GetState() == SessionState::Closed)                  

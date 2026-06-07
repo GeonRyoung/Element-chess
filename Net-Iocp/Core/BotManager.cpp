@@ -22,3 +22,31 @@ void BotManager::UpdateBots(float deltaTime)
     // 월드 틱과는 별개로 봇 스폰/디스폰 등의 매니저 레벨 업데이트 처리
     // 실제 봇 객체(Entity)의 Update(FSM)는 World::UpdateWorldTick()에 의해 갱신됩니다.
 }
+
+#include "World.h"
+
+void BotManager::SpawnBots(int count, std::shared_ptr<World> world)
+{
+    std::lock_guard<std::mutex> lock(m_botLock);
+    for (int i = 0; i < count; ++i)
+    {
+        uint32_t newId = static_cast<uint32_t>(m_bots.size() + 10000); // 봇 ID 할당
+        auto bot = std::make_shared<Bot>(newId);
+        bot->SetPosition({0.0f, 0.0f});
+        m_bots[newId] = bot;
+        
+        if (world)
+            world->AddEntity(bot);
+    }
+}
+
+void BotManager::RemoveAllBots()
+{
+    std::lock_guard<std::mutex> lock(m_botLock);
+    m_bots.clear();
+}
+
+size_t BotManager::GetBotCount() const
+{
+    return m_bots.size();
+}
