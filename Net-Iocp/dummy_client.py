@@ -22,10 +22,10 @@ class EBotState(Enum):
     TERMINATED = 4
 
 class Opcode(Enum):
-    CS_AUTH_REQ = 1
-    CS_MOVE = 2
-    CS_ATTACK = 3
-    CS_SCENARIO = 4
+    CS_CONNECT = 0x0001
+    CS_AUTH = 0x0003
+    CS_POSITION_UPDATE = 0x0101
+    CS_COMBAT_ACTION = 0x0201
 
 SERVER_IP = "127.0.0.1"
 SERVER_PORT = 9000
@@ -74,16 +74,16 @@ class DummyBot:
         await asyncio.sleep(0.01) # 소켓 바인딩 시뮬레이션
         
         await self.change_state(EBotState.AUTH_WAIT)
-        await self.send_packet(Opcode.CS_AUTH_REQ.value)
+        await self.send_packet(Opcode.CS_CONNECT.value)
         await asyncio.sleep(0.05) # 인증 응답 대기 시뮬레이션
         
         await self.change_state(EBotState.ACTIVE)
         
         # 활성 상태 로직 처리 (시나리오 패킷 전송)
         while self.state == EBotState.ACTIVE and self.manager.is_running:
-            opcode = Opcode.CS_MOVE.value
+            opcode = Opcode.CS_POSITION_UPDATE.value
             if self.manager.current_scenario == "attack":
-                opcode = Opcode.CS_ATTACK.value
+                opcode = Opcode.CS_COMBAT_ACTION.value
                 
             await self.send_packet(opcode)
             
@@ -103,7 +103,7 @@ class BotManager:
         self.tasks = []
 
     async def start_bots(self, count, delay=0.01):
-        console.print(f"[green]Starting {count} bots with {delay}s spawn delay...[/green]")
+        print(f"외부 더미 봇 {count}개 생성을 시작합니다. (딜레이: {delay}초)...")
         start_id = len(self.bots) + 1
         for i in range(count):
             if not self.is_running:
@@ -116,7 +116,7 @@ class BotManager:
             if delay > 0:
                 await asyncio.sleep(delay)
                 
-        console.print(f"[bold green]Successfully spawned {count} bots. Total bots: {len(self.bots)}[/bold green]")
+        print(f"성공적으로 {count}개의 봇이 생성되었습니다. (총 외부 봇: {len(self.bots)}마리)")
 
     def set_packet_loss(self, rate):
         self.packet_loss_rate = float(rate)

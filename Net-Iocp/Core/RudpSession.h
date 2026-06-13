@@ -2,6 +2,10 @@
 #pragma comment(lib, "Ws2_32.lib")
 
 #include <WinSock2.h>
+#pragma once
+#pragma comment(lib, "Ws2_32.lib")
+
+#include <WinSock2.h>
 #include <atomic>
 #include <memory>
 #include <array>
@@ -10,6 +14,7 @@
 #include <mutex>
 #include "CircularBuffer.h"
 #include "Packet.h"
+#include "RecvContext.h"
 #include <chrono>
 
 struct UnackedInfo
@@ -21,11 +26,11 @@ struct UnackedInfo
 
 enum class SessionState : uint8_t
 {
-    Free = 0,       // LockFreeObjectPool 내부 대기
-    Connecting,     // 연결 중
-    WaitAuth,       // 인증 대기
-    Active,         // 활성화
-    Closed          // 종료
+    Free = 0,
+    Connecting,
+    WaitAuth,
+    Active,
+    Closed
 };
 
 class RudpSession : public std::enable_shared_from_this<RudpSession>
@@ -37,7 +42,7 @@ private:
     std::atomic<SessionState> m_state;
     SOCKADDR_IN m_remoteAddr;
     
-    OVERLAPPED m_sendOverlapped;
+    IocpContext m_sendContext;
     
     CircularBuffer m_recvBuffer;
     std::atomic<bool> m_isRecvPending;
@@ -82,7 +87,7 @@ public:
             Getter
     =======================*/
     uint64_t GetSessionId() const { return m_sessionId; }
-    OVERLAPPED* GetSendOverlappedPtr() { return &m_sendOverlapped; } 
+    IocpContext* GetSendContextPtr() { return &m_sendContext; } 
     const SOCKADDR_IN& GetRemoteAddr() const { return m_remoteAddr; }
     
 };

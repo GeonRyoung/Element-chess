@@ -11,7 +11,7 @@ class Sector : public std::enable_shared_from_this<Sector>
 private:
     uint32_t m_uSectorId;
     std::unordered_set<std::shared_ptr<Entity>> m_entities;
-    std::shared_mutex m_sectorLock;
+    mutable std::shared_mutex m_sectorLock;
 
 public:
     Sector(uint32_t sectorId);

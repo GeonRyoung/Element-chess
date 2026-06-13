@@ -6,7 +6,7 @@
 ## 1. 모니터링 시스템 구동 (Docker 필요)
 터미널을 열고 `Monitoring` 폴더로 이동한 뒤, 아래 명령어를 통해 Grafana와 Prometheus 컨테이너를 실행합니다.
 ```powershell
-cd Monitoring
+cd Net-Iocp\Monitoring
 docker-compose up -d
 ```
 
@@ -37,4 +37,4 @@ Visual Studio에서 빌드된 독립 실행 파일 `Net-Iocp.exe`를 더블클�
 
 ## 6. 종료
 - 테스트가 끝나면 스크립트 실행창에서 `Ctrl+C`를 눌러 전송을 중단합니다.
-- 모니터링 컨테이너를 끄시려면 `Monitoring` 폴더에서 `docker-compose down`을 입력합니다.
+- 모니터링 컨테이너를 끄시려면 `Net-Iocp\Monitoring` 폴더에서 `docker-compose down`을 입력합니다.

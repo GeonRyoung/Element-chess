@@ -30,40 +30,36 @@ void IocpCore::WorkerThreadMain()
         if (m_sessionManager == nullptr)
             continue;
 
-        const uint64_t sessionId = static_cast<uint64_t>(completionKey);
+        const uint64_t completionSessionId = static_cast<uint64_t>(completionKey);
+        IocpContext* context = reinterpret_cast<IocpContext*>(pOverlapped);
         
-        if (sessionId == 0)
+        if (context->type == IocpOpType::Recv)
         {
-            RecvContext* context = reinterpret_cast<RecvContext*>(pOverlapped);
+            RecvContext* recvCtx = static_cast<RecvContext*>(context);
             if (bSuccess && bytesTransferred > 0)
             {
-                m_sessionManager->OnReceiveRouted(context, static_cast<DWORD>(bytesTransferred));
+                m_sessionManager->OnReceiveRouted(recvCtx, static_cast<DWORD>(bytesTransferred));
             }
-            m_sessionManager->PostRecvFrom(context);
+            m_sessionManager->PostRecvFrom(recvCtx);
             continue;
         }
-        
-        std::shared_ptr<RudpSession> session = m_sessionManager->FindSession(sessionId);
-        if (!session)
-            continue;
-
-        if (!bSuccess)
+        else if (context->type == IocpOpType::Send)
         {
-            session->DisConnect();                                             
-            m_sessionManager->RemoveSession(session->GetSessionId());           
-            continue;
-        }
+            uint64_t sessionId = context->sessionId;
+            std::shared_ptr<RudpSession> session = m_sessionManager->FindSession(sessionId);
+            if (!session)
+                continue;
 
-        if (pOverlapped == session->GetSendOverlappedPtr())               
-        {
+            if (!bSuccess)
+            {
+                session->DisConnect();                                             
+                m_sessionManager->RemoveSession(sessionId);           
+                continue;
+            }
+
             session->OnSendCompleted(static_cast<size_t>(bytesTransferred));  
             if (session->GetState() == SessionState::Closed)                  
-                m_sessionManager->RemoveSession(session->GetSessionId());       
-        }
-        else
-        {
-            session->DisConnect();
-            m_sessionManager->RemoveSession(session->GetSessionId());
+                m_sessionManager->RemoveSession(sessionId);       
         }
     }
 }

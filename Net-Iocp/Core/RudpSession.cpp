@@ -12,7 +12,7 @@ RudpSession::RudpSession(): m_socket(INVALID_SOCKET), m_sessionId(0), m_state(Se
                             m_sendingPacket(nullptr), m_fSrtt(0.0f), m_fRttVar(0.0f), m_uRto(500),
                             m_highestRecvSeq(0), m_recvBitmap(0)
 {
-    ZeroMemory(&m_sendOverlapped, sizeof(m_sendOverlapped));
+    ZeroMemory(&m_sendContext.overlapped, sizeof(WSAOVERLAPPED));
     ZeroMemory(&m_remoteAddr, sizeof(m_remoteAddr));
 }
 
@@ -29,7 +29,7 @@ void RudpSession::Init(SOCKET socket, uint64_t sessionId, const SOCKADDR_IN& rem
     
     m_state.store(SessionState::Connecting, std::memory_order_release);
     
-    ZeroMemory(&m_sendOverlapped, sizeof(m_sendOverlapped));
+    ZeroMemory(&m_sendContext.overlapped, sizeof(WSAOVERLAPPED));
     
     m_recvBuffer.Clear();
     m_isSendPending.store(false, std::memory_order_release);
@@ -106,18 +106,21 @@ void RudpSession::PostSend()
 
     m_sendingPacket = packet;
 
-    ZeroMemory(&m_sendOverlapped, sizeof(m_sendOverlapped));
+    ZeroMemory(&m_sendContext.overlapped, sizeof(WSAOVERLAPPED));
+    m_sendContext.type = IocpOpType::Send;
+    m_sendContext.sessionId = m_sessionId;
 
     WSABUF wsaBuf;
     wsaBuf.buf = packet->GetBuffer();
     wsaBuf.len = static_cast<ULONG>(packet->GetTotalSize());
 
     DWORD bytesSent = 0;
+    
     // WSASendTo 사용 (클라이언트의 정확한 주소로 응답)
-    if (WSASendTo(m_socket, &wsaBuf, 1, &bytesSent, 0, (SOCKADDR*)&m_remoteAddr, sizeof(m_remoteAddr), &m_sendOverlapped, nullptr) == SOCKET_ERROR)
+    if (WSASendTo(m_socket, &wsaBuf, 1, &bytesSent, 0, (SOCKADDR*)&m_remoteAddr, sizeof(m_remoteAddr), &m_sendContext.overlapped, nullptr) == SOCKET_ERROR)
     {
-        int err = WSAGetLastError();
-        if (err != WSA_IO_PENDING)
+        int error = WSAGetLastError();
+        if (error != WSA_IO_PENDING)
         {
             m_isSendPending.store(false, std::memory_order_release);
             m_sendingPacket.reset();
@@ -378,4 +381,4 @@ void RudpSession::OnRecvData(char* data, size_t bytesTransferred)
         float dummyLatency = static_cast<float>(rand() % 15 + 1);
         MetricManager::GetInstance().SetLatency(dummyLatency);
     }
-}
+} 
