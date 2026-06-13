@@ -20,6 +20,12 @@ void Sector::RemoveEntity(std::shared_ptr<Entity> entity)
     m_entities.erase(entity);
 }
 
+std::vector<std::shared_ptr<Entity>> Sector::GetEntitiesSnapshot() const
+{
+    std::shared_lock<std::shared_mutex> lock(m_sectorLock);
+    return std::vector<std::shared_ptr<Entity>>(m_entities.begin(), m_entities.end());
+}
+
 void Sector::Broadcast(std::shared_ptr<Packet> packet)
 {
     if (!packet) return;

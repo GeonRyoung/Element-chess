@@ -91,6 +91,48 @@ void World::MoveEntity(std::shared_ptr<Entity> entity, Vector2 newPos)
     }
 }
 
+void World::BroadcastToAOI(std::shared_ptr<Entity> sender, std::shared_ptr<Packet> packet, float aoiRadius)
+{
+    if (!sender || !packet) return;
+
+    Vector2 centerPos = sender->GetPosition();
+    
+    // Bounding Box를 기반으로 탐색할 섹터의 행/열 범위 계산
+    int minCol = static_cast<int>(std::max(0.0f, centerPos.x - aoiRadius) / m_fSectorSize);
+    int maxCol = static_cast<int>(std::min(m_fWorldWidth - 1.0f, centerPos.x + aoiRadius) / m_fSectorSize);
+    int minRow = static_cast<int>(std::max(0.0f, centerPos.y - aoiRadius) / m_fSectorSize);
+    int maxRow = static_cast<int>(std::min(m_fWorldHeight - 1.0f, centerPos.y + aoiRadius) / m_fSectorSize);
+
+    float aoiRadiusSq = aoiRadius * aoiRadius;
+
+    // 인접 섹터들만 순회
+    for (int r = minRow; r <= maxRow; ++r)
+    {
+        for (int c = minCol; c <= maxCol; ++c)
+        {
+            std::shared_ptr<Sector> targetSector = m_sectors[r][c];
+            if (!targetSector) continue;
+
+            auto entities = targetSector->GetEntitiesSnapshot();
+            for (const auto& entity : entities)
+            {
+                if (!entity || !entity->IsPlayer() || entity == sender)
+                    continue;
+
+                Vector2 ePos = entity->GetPosition();
+                float dx = ePos.x - centerPos.x;
+                float dy = ePos.y - centerPos.y;
+                float distSq = dx * dx + dy * dy;
+
+                if (distSq <= aoiRadiusSq)
+                {
+                    entity->SendPacket(packet);
+                }
+            }
+        }
+    }
+}
+
 void World::UpdateWorldTick(float deltaTime)
 {
     std::vector<std::shared_ptr<Entity>> currentEntities;

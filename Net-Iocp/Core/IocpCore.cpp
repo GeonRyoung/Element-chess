@@ -31,6 +31,18 @@ void IocpCore::WorkerThreadMain()
             continue;
 
         const uint64_t sessionId = static_cast<uint64_t>(completionKey);
+        
+        if (sessionId == 0)
+        {
+            RecvContext* context = reinterpret_cast<RecvContext*>(pOverlapped);
+            if (bSuccess && bytesTransferred > 0)
+            {
+                m_sessionManager->OnReceiveRouted(context, static_cast<DWORD>(bytesTransferred));
+            }
+            m_sessionManager->PostRecvFrom(context);
+            continue;
+        }
+        
         std::shared_ptr<RudpSession> session = m_sessionManager->FindSession(sessionId);
         if (!session)
             continue;
@@ -42,17 +54,7 @@ void IocpCore::WorkerThreadMain()
             continue;
         }
 
-        if (pOverlapped == session->GetRecvOverlappedPtr())                   
-        {
-            // 패킷 메트릭 증가
-            MetricManager::GetInstance().RecordPacket();
-            
-            session->OnRecvCompleted(static_cast<size_t>(bytesTransferred));  
-
-            if (session->GetState() == SessionState::Closed)                  
-                m_sessionManager->RemoveSession(session->GetSessionId());       
-        }
-        else if (pOverlapped == session->GetSendOverlappedPtr())               
+        if (pOverlapped == session->GetSendOverlappedPtr())               
         {
             session->OnSendCompleted(static_cast<size_t>(bytesTransferred));  
             if (session->GetState() == SessionState::Closed)                  

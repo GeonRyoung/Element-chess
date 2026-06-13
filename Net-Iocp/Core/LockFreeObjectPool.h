@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include <atomic>
 #include <memory>
@@ -57,8 +57,13 @@ public:
             {
                 m_availableCount.fetch_sub(1, std::memory_order_relaxed);
                 
+                // std::enable_shared_from_this의 weak_ptr 상태를 리셋하기 위해 Placement New 호출
+                T* ptr = &head.ptr->data;
+                ptr->~T();
+                new (ptr) T();
+                
                 // shared_ptr의 커스텀 삭제자를 지정하여, delete 대신 Free로 반환되게 함
-                return std::shared_ptr<T>(&head.ptr->data, [this, node = head.ptr](T* ptr)
+                return std::shared_ptr<T>(ptr, [this, node = head.ptr](T* p)
                 {
                     this->Free(node);
                 });

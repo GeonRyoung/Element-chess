@@ -1,24 +1,89 @@
 {
-  "title": "Net-Iocp Server Metrics",
+  "title": "Element-Pulse System Dashboard (Net-Iocp)",
+  "schemaVersion": 38,
+  "timezone": "browser",
+  "refresh": "5s",
   "panels": [
     {
-      "type": "timeseries",
-      "title": "Packet Count (Cumulative)",
-      "gridPos": { "h": 9, "w": 12, "x": 0, "y": 0 },
-      "targets": [
-        { "expr": "netiocp_packet_count", "legendFormat": "Packets Processed" }
-      ]
+      "type": "row",
+      "title": "1. Global Metrics",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 }
+    },
+    {
+      "type": "gauge",
+      "title": "Active Sessions",
+      "gridPos": { "h": 6, "w": 8, "x": 0, "y": 1 },
+      "targets": [{ "expr": "netiocp_active_sessions", "legendFormat": "Sessions" }],
+      "fieldConfig": {
+        "defaults": {
+          "min": 0,
+          "max": 5000,
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [ { "color": "green", "value": null }, { "color": "red", "value": 4000 } ]
+          }
+        }
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Server Uptime",
+      "gridPos": { "h": 6, "w": 8, "x": 8, "y": 1 },
+      "targets": [{ "expr": "netiocp_uptime_seconds", "legendFormat": "Uptime" }],
+      "fieldConfig": { "defaults": { "unit": "s", "color": { "mode": "value" } } }
+    },
+    {
+      "type": "stat",
+      "title": "Total Packets Processed",
+      "gridPos": { "h": 6, "w": 8, "x": 16, "y": 1 },
+      "targets": [{ "expr": "netiocp_packet_count", "legendFormat": "Packets" }],
+      "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "value" } } }
+    },
+    {
+      "type": "row",
+      "title": "2. Network Performance",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 7 }
     },
     {
       "type": "timeseries",
-      "title": "Latency (ms)",
-      "gridPos": { "h": 9, "w": 12, "x": 12, "y": 0 },
-      "targets": [
-        { "expr": "netiocp_latency_ms", "legendFormat": "Latency" }
-      ]
+      "title": "Packets Per Second (PPS)",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+      "targets": [{ "expr": "rate(netiocp_packet_count[1m])", "legendFormat": "PPS" }]
+    },
+    {
+      "type": "timeseries",
+      "title": "RUDP Retransmission Rate",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+      "targets": [{ "expr": "rate(netiocp_retransmit_count[1m]) / rate(netiocp_packet_count[1m])", "legendFormat": "Retransmit Rate" }],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [ { "color": "green", "value": null }, { "color": "yellow", "value": 0.05 }, { "color": "red", "value": 0.1 } ]
+          }
+        }
+      }
+    },
+    {
+      "type": "row",
+      "title": "3. System Resource",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 16 }
+    },
+    {
+      "type": "timeseries",
+      "title": "IOCP Worker Thread CPU Usage",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 17 },
+      "targets": [{ "expr": "netiocp_worker_cpu_usage", "legendFormat": "CPU Usage" }],
+      "fieldConfig": { "defaults": { "unit": "percent" } }
+    },
+    {
+      "type": "timeseries",
+      "title": "Memory Pool Remaining Capacity",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 17 },
+      "targets": [{ "expr": "netiocp_pool_available", "legendFormat": "Available Objects" }]
     }
-  ],
-  "schemaVersion": 38,
-  "timezone": "browser",
-  "refresh": "5s"
+  ]
 }
